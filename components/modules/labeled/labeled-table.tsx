@@ -586,21 +586,11 @@ function LabeledEventsTableContent() {
     <div className="space-y-4">
       {/* Selection Bar */}
       {selectedRowsCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          <div className="w-full max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
+      <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="font-medium">{selectedRowsCount} selected</span>
             </div>
             <div className="flex items-center gap-2">
-              <LabelEventsDialog
-                selectedEventIds={table
-                  .getFilteredSelectedRowModel()
-                  .rows.map((row) => row.original.id.toString())}
-                onSuccess={() => {
-                  table.toggleAllPageRowsSelected(false);
-                  fetchLabels(); // Refresh table data
-                }}
-              />
               <Button
                 variant="destructive"
                 size="sm"
@@ -617,7 +607,6 @@ function LabeledEventsTableContent() {
               </Button>
             </div>
           </div>
-        </div>
       )}
 
       {/* Filters Status */}

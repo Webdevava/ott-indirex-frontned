@@ -1,11 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -39,16 +54,96 @@ interface LabelEventsDialogProps {
   onSuccess?: () => void;
 }
 
+interface BrandData {
+  name: string;
+  products: {
+    name: string;
+    category: string;
+    sector: string;
+  }[];
+}
+
+interface ComboboxProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  placeholder: string;
+  searchPlaceholder: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+function Combobox({ 
+  value, 
+  onValueChange, 
+  options, 
+  placeholder, 
+  searchPlaceholder, 
+  disabled = false,
+  className = "w-full"
+}: ComboboxProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn("justify-between", className)}
+          disabled={disabled}
+        >
+          {value
+            ? options.find((option) => option.value === value)?.label
+            : placeholder}
+          <ChevronsUpDown className="opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} className="h-9" />
+          <CommandList>
+            <CommandEmpty>No option found.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={(currentValue) => {
+                    onValueChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  {option.label}
+                  <Check
+                    className={cn(
+                      "ml-auto",
+                      value === option.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [brandsData, setBrandsData] = useState<BrandData[]>([]);
+  const [isCustomBrand, setIsCustomBrand] = useState(false);
 
   const form = useForm<CreateLabel>({
     resolver: zodResolver(CreateLabelSchema),
     defaultValues: {
       event_ids: selectedEventIds,
       label_type: undefined,
-      notes: undefined, // Changed to undefined to make notes optional
+      notes: "Label created for selected events",
       song: undefined,
       ad: undefined,
       error: undefined,
@@ -57,6 +152,63 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
   });
 
   const labelType = form.watch("label_type");
+  const selectedBrand = form.watch("ad.brand");
+
+  // Load brands data
+  useEffect(() => {
+    const loadBrandsData = async () => {
+      try {
+        const response = await fetch('/data/brands.json');
+        const data = await response.json();
+        setBrandsData(data);
+      } catch (error) {
+        console.error('Failed to load brands data:', error);
+        // Fallback data structure
+        setBrandsData([]);
+      }
+    };
+
+    loadBrandsData();
+  }, []);
+
+  // Get unique brand options
+  const brandOptions = [
+    ...brandsData.map(brand => ({
+      value: brand.name,
+      label: brand.name
+    })),
+    { value: "other", label: "Other (Custom Brand)" }
+  ];
+
+  // Get products for selected brand
+  const getProductsForBrand = (brandName: string) => {
+    const brand = brandsData.find(b => b.name === brandName);
+    return brand ? brand.products : [];
+  };
+
+  // Get product options for selected brand
+  const productOptions = selectedBrand && selectedBrand !== "other"
+    ? getProductsForBrand(selectedBrand).map(product => ({
+        value: product.name,
+        label: product.name
+      }))
+    : [];
+
+  // Get categories for selected brand
+  const categoryOptions = selectedBrand && selectedBrand !== "other"
+    ? [...new Set(getProductsForBrand(selectedBrand).map(p => p.category))].map(category => ({
+        value: category,
+        label: category
+      }))
+    : [];
+
+  // Get sectors for selected brand
+  const sectorOptions = selectedBrand && selectedBrand !== "other"
+    ? [...new Set(getProductsForBrand(selectedBrand).map(p => p.sector))].map(sector => ({
+        value: sector,
+        label: sector
+      }))
+    : [];
 
   const onSubmit = async (data: CreateLabel) => {
     setIsSubmitting(true);
@@ -66,12 +218,31 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
         toast.success(response.message || "Label created successfully");
         setOpen(false);
         form.reset();
+        setIsCustomBrand(false);
         onSuccess?.();
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to create label");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Handle brand selection
+  const handleBrandChange = (value: string) => {
+    form.setValue("ad.brand", value);
+    if (value === "other") {
+      setIsCustomBrand(true);
+      // Clear other fields when switching to custom
+      form.setValue("ad.product", "");
+      form.setValue("ad.category", "");
+      form.setValue("ad.sector", "");
+    } else {
+      setIsCustomBrand(false);
+      // Clear other fields when switching brands
+      form.setValue("ad.product", "");
+      form.setValue("ad.category", "");
+      form.setValue("ad.sector", "");
     }
   };
 
@@ -105,8 +276,9 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       form.setValue("ad", undefined);
                       form.setValue("error", undefined);
                       form.setValue("program", undefined);
+                      setIsCustomBrand(false);
                     }}
-                    value={field.value}
+                    value={field.value || ""}
                     disabled={isSubmitting}
                   >
                     <FormControl>
@@ -211,9 +383,9 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       control={form.control}
                       name="ad.type"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="md:col-span-2">
                           <FormLabel>Ad Type</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isSubmitting}>
+                          <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select ad type" />
@@ -229,6 +401,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                         </FormItem>
                       )}
                     />
+                    
                     <FormField
                       control={form.control}
                       name="ad.brand"
@@ -236,60 +409,150 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                         <FormItem>
                           <FormLabel>Brand</FormLabel>
                           <FormControl>
-                            <Input {...field} value={field.value ?? ""} placeholder="Enter brand" disabled={isSubmitting} />
+                            <Combobox
+                              value={field.value ?? ""}
+                              onValueChange={handleBrandChange}
+                              options={brandOptions}
+                              placeholder="Select brand..."
+                              searchPlaceholder="Search brands..."
+                              disabled={isSubmitting}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="ad.product"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Product</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value ?? ""} placeholder="Enter product" disabled={isSubmitting} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ad.category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value ?? ""} placeholder="Enter category" disabled={isSubmitting} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ad.sector"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sector</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value ?? ""} placeholder="Enter sector" disabled={isSubmitting} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
+                    {isCustomBrand ? (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="ad.product"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product</FormLabel>
+                              <FormControl>
+                                <Input {...field} value={field.value ?? ""} placeholder="Enter product" disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="ad.category"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Category</FormLabel>
+                              <FormControl>
+                                <Input {...field} value={field.value ?? ""} placeholder="Enter category" disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="ad.sector"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Sector</FormLabel>
+                              <FormControl>
+                                <Input {...field} value={field.value ?? ""} placeholder="Enter sector" disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    ) : (
+                      selectedBrand && selectedBrand !== "other" && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="ad.product"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Product</FormLabel>
+                                <FormControl>
+                                  <Combobox
+                                    value={field.value ?? ""}
+                                    onValueChange={field.onChange}
+                                    options={productOptions}
+                                    placeholder="Select product..."
+                                    searchPlaceholder="Search products..."
+                                    disabled={isSubmitting}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="ad.category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Category</FormLabel>
+                                <FormControl>
+                                  <Combobox
+                                    value={field.value ?? ""}
+                                    onValueChange={field.onChange}
+                                    options={categoryOptions}
+                                    placeholder="Select category..."
+                                    searchPlaceholder="Search categories..."
+                                    disabled={isSubmitting}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="ad.sector"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Sector</FormLabel>
+                                <FormControl>
+                                  <Combobox
+                                    value={field.value ?? ""}
+                                    onValueChange={field.onChange}
+                                    options={sectorOptions}
+                                    placeholder="Select sector..."
+                                    searchPlaceholder="Search sectors..."
+                                    disabled={isSubmitting}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )
+                    )}
+
                     <FormField
                       control={form.control}
                       name="ad.format"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Format</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value ?? ""} placeholder="Enter format" disabled={isSubmitting} />
-                          </FormControl>
+                          <Select 
+                            onValueChange={field.onChange} 
+                            value={field.value || ""} 
+                            disabled={isSubmitting}
+                            defaultValue="CAPB"
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select format" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="CAPB">In Program Adv</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -304,7 +567,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Error Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isSubmitting}>
+                        <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select error type" />
@@ -344,9 +607,39 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Genre</FormLabel>
-                          <FormControl>
-                            <Input {...field} value={field.value ?? ""} placeholder="Enter genre" disabled={isSubmitting} />
-                          </FormControl>
+                          <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select genre" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Action">Action</SelectItem>
+                              <SelectItem value="Adventure">Adventure</SelectItem>
+                              <SelectItem value="Animation">Animation</SelectItem>
+                              <SelectItem value="Biography">Biography</SelectItem>
+                              <SelectItem value="Comedy">Comedy</SelectItem>
+                              <SelectItem value="Crime">Crime</SelectItem>
+                              <SelectItem value="Documentary">Documentary</SelectItem>
+                              <SelectItem value="Drama">Drama</SelectItem>
+                              <SelectItem value="Family">Family</SelectItem>
+                              <SelectItem value="Fantasy">Fantasy</SelectItem>
+                              <SelectItem value="History">History</SelectItem>
+                              <SelectItem value="Horror">Horror</SelectItem>
+                              <SelectItem value="Music">Music</SelectItem>
+                              <SelectItem value="Musical">Musical</SelectItem>
+                              <SelectItem value="Mystery">Mystery</SelectItem>
+                              <SelectItem value="News">News</SelectItem>
+                              <SelectItem value="Reality TV">Reality TV</SelectItem>
+                              <SelectItem value="Romance">Romance</SelectItem>
+                              <SelectItem value="Sci-Fi">Sci-Fi</SelectItem>
+                              <SelectItem value="Sport">Sport</SelectItem>
+                              <SelectItem value="Talk Show">Talk Show</SelectItem>
+                              <SelectItem value="Thriller">Thriller</SelectItem>
+                              <SelectItem value="War">War</SelectItem>
+                              <SelectItem value="Western">Western</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -414,9 +707,9 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea {...field} value={field.value ?? ""} placeholder="Enter notes (optional)" disabled={isSubmitting} />
+                    <Textarea {...field} value={field.value ?? ""} placeholder="Enter notes" disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

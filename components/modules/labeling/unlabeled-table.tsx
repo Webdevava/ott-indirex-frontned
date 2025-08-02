@@ -446,35 +446,33 @@ function EventTableContent() {
   const selectedRowsCount = table.getFilteredSelectedRowModel().rows.length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
       {/* Selection Bar */}
-      {selectedRowsCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50">
-          <div className="w-full max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="font-medium">{selectedRowsCount} selected</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <LabelEventsDialog
-                selectedEventIds={table
-                  .getFilteredSelectedRowModel()
-                  .rows.map((row) => row.original.id)}
-                onSuccess={() => {
-                  table.toggleAllPageRowsSelected(false);
-                  fetchEvents(); // Refresh table data
-                }}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.toggleAllPageRowsSelected(false)}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
+{selectedRowsCount > 0 && (
+ <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <span className="font-medium">{selectedRowsCount} selected</span>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <LabelEventsDialog
+            selectedEventIds={table
+              .getFilteredSelectedRowModel()
+              .rows.map((row) => row.original.id)}
+            onSuccess={() => {
+              table.toggleAllPageRowsSelected(false);
+              fetchEvents(); // Refresh table data
+            }}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.toggleAllPageRowsSelected(false)}
+          >
+            Clear
+          </Button>
+        </div>
+      </div>
+  )}
 
       {/* Filters Status */}
       <div className="flex items-center justify-between gap-3 max-sm:flex-col">

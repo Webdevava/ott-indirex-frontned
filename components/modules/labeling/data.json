@@ -1,0 +1,1052 @@
+[
+  {
+    "name": "Beko",
+    "products": [
+      {
+        "name": "Beko",
+        "category": "Consumer Durables-Kitchen Appliances",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Elica",
+    "products": [
+      {
+        "name": "Elica",
+        "category": "Consumer Durables-Kitchen Appliances",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Midea",
+    "products": [
+      {
+        "name": "CG Midea",
+        "category": "Consumer Durables-Home Appliances",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "CG Cement",
+    "products": [
+      {
+        "name": "CG Cement",
+        "category": "Building Materials",
+        "sector": "Construction"
+      }
+    ]
+  },
+  {
+    "name": "Kent",
+    "products": [
+      {
+        "name": "Kent",
+        "category": "Consumer Durables-Water Purifiers",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Godrej",
+    "products": [
+      {
+        "name": "Godrej Hair Color",
+        "category": "Hair Care Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "LG",
+    "products": [
+      {
+        "name": "LG",
+        "category": "Consumer Durables-Home Appliances",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "TCL",
+    "products": [
+      {
+        "name": "TCL",
+        "category": "Consumer Durables-Televisions",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Black & Decker",
+    "products": [
+      {
+        "name": "Black & Decker",
+        "category": "Consumer Durables-Kitchen Appliances",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Nepal ICE bear",
+    "products": [
+      {
+        "name": "Nepal ICE bear",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Wai Wai",
+    "products": [
+      {
+        "name": "WaiWai Dynamite",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Waiwai Quick",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Waiwai Quick Pyro",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Nabil Bank",
+    "products": [
+      {
+        "name": "Nabil Bank",
+        "category": "Banking & Finance",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "CG",
+    "products": [
+      {
+        "name": "CG",
+        "category": "Consumer Durables",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "CG Digital",
+        "category": "Consumer Durables-Multi-Brand Electrical Appliances",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "CG Electronics",
+        "category": "Consumer Durables-Electronics",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "CG_Meridia",
+        "category": "Property-Housing",
+        "sector": "Property"
+      }
+    ]
+  },
+  {
+    "name": "Shivam Cement",
+    "products": [
+      {
+        "name": "Shivam Cement",
+        "category": "Building Materials",
+        "sector": "Construction"
+      }
+    ]
+  },
+  {
+    "name": "Coca Cola",
+    "products": [
+      {
+        "name": "Coca Cola",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Fanta",
+    "products": [
+      {
+        "name": "Fanta",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Sprite",
+    "products": [
+      {
+        "name": "Sprite",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Horlicks",
+    "products": [
+      {
+        "name": "Horlicks",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Axe",
+    "products": [
+      {
+        "name": "Axe",
+        "category": "Personal Care Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Dove",
+    "products": [
+      {
+        "name": "Dove",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Lux",
+    "products": [
+      {
+        "name": "Lux",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      },
+      {
+        "name": "LUX Essence Of Himalayas",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Lakme",
+    "products": [
+      {
+        "name": "Lakme",
+        "category": "Personal Care-Cosmetics & Beauty Products",
+        "sector": "Personal Care"
+      },
+      {
+        "name": "Lakme Lumi Cream",
+        "category": "Personal Care-Cosmetics",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Lifebuoy",
+    "products": [
+      {
+        "name": "Lifebuoy",
+        "category": "Personal Cleansing Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Sunsilk",
+    "products": [
+      {
+        "name": "Sunsilk",
+        "category": "Personal Care-Hair Care Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Closeup",
+    "products": [
+      {
+        "name": "Closeup",
+        "category": "Personal Care-Oral Care Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Pepsodent",
+    "products": [
+      {
+        "name": "Pepsodent",
+        "category": "Personal Care-Oral Care Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Ponds",
+    "products": [
+      {
+        "name": "Ponds",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Vaseline",
+    "products": [
+      {
+        "name": "Vaseline",
+        "category": "Personal Care-Skin Care & Beauty Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Wheel",
+    "products": [
+      {
+        "name": "Wheel",
+        "category": "Cleaning Supplies",
+        "sector": "Household Products"
+      }
+    ]
+  },
+  {
+    "name": "OK Soap",
+    "products": [
+      {
+        "name": "OK Soap",
+        "category": "Cleaning Supplies",
+        "sector": "Household Products"
+      }
+    ]
+  },
+  {
+    "name": "E Sewa",
+    "products": [
+      {
+        "name": "E sewa",
+        "category": "Digital Payment",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "Fonepay",
+    "products": [
+      {
+        "name": "FonePay",
+        "category": "Digital Payment",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "Hit",
+    "products": [
+      {
+        "name": "HIT",
+        "category": "Mosquito Racquet",
+        "sector": "Household Products"
+      }
+    ]
+  },
+  {
+    "name": "Cinthol",
+    "products": [
+      {
+        "name": "Cinthol",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Goodnight",
+    "products": [
+      {
+        "name": "Good Knight",
+        "category": "Mosquito Racquet",
+        "sector": "Household Products"
+      }
+    ]
+  },
+  {
+    "name": "TATA",
+    "products": [
+      {
+        "name": "TATA",
+        "category": "Automobile",
+        "sector": "Automobile"
+      },
+      {
+        "name": "Tata Punch EV",
+        "category": "Automobile-Electric Vehicles",
+        "sector": "Automobile"
+      },
+      {
+        "name": "Tata Nexon",
+        "category": "Automobile-Electric Vehicles",
+        "sector": "Automobile"
+      },
+      {
+        "name": "Tata Tiago EV",
+        "category": "Automobile-Electric Vehicles",
+        "sector": "Automobile"
+      }
+    ]
+  },
+  {
+    "name": "Berger",
+    "products": [
+      {
+        "name": "Berger",
+        "category": "Building Materials",
+        "sector": "Construction"
+      }
+    ]
+  },
+  {
+    "name": "Global IME Bank",
+    "products": [
+      {
+        "name": "Global IME Bank",
+        "category": "Digital Payment",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "IME Pay",
+    "products": [
+      {
+        "name": "IMEPay",
+        "category": "Digital Payment",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "IMERemit",
+    "products": [
+      {
+        "name": "IMERemit",
+        "category": "Digital Payment",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "Samsung",
+    "products": [
+      {
+        "name": "Samsung Mobile",
+        "category": "Consumer Durables-Smart Phone",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung TV",
+        "category": "Consumer Durables-TV",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Washing Machine",
+        "category": "Consumer Durables-Washing Machine",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Air Purifier",
+        "category": "Consumer Durables-Air Purifier",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Vacuum Cleaner",
+        "category": "Consumer Durables-Vacuum Cleaner",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Sound Bar",
+        "category": "Consumer Durables-Sound Bar",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Monitor",
+        "category": "Consumer Durables-Monitor",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Microwave Oven",
+        "category": "Consumer Durables-Oven",
+        "sector": "Consumer Durables"
+      },
+      {
+        "name": "Samsung Air Dresser",
+        "category": "Consumer Durables-Air Dresser",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Pepsi",
+    "products": [
+      {
+        "name": "Pepsi",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "7up",
+    "products": [
+      {
+        "name": "7up",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Mountain Dew",
+    "products": [
+      {
+        "name": "Mountain Dew",
+        "category": "Beverages",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Dark Fantasy",
+    "products": [
+      {
+        "name": "Dark Fantasy",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Mangaldeep",
+    "products": [
+      {
+        "name": "Mangaldeep",
+        "category": "Spiritual Products",
+        "sector": "Household Products"
+      }
+    ]
+  },
+  {
+    "name": "Minto",
+    "products": [
+      {
+        "name": "Minto",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Toffichoo",
+    "products": [
+      {
+        "name": "Toffichoo Eclairs",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Toffichoo Tadka",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Toffichoo Coffee Delite",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Toffichoo Cofitino",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Dabur",
+    "products": [
+      {
+        "name": "Dabur Real Fruit Juice",
+        "category": "Beverages",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Dabur Honey",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Dabur Chyawanprash",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      },
+      {
+        "name": "Dabur Red Paste",
+        "category": "Personal Care-Oral Care Products",
+        "sector": "Personal Care"
+      },
+      {
+        "name": "Dabur Hair Care",
+        "category": "Personal Care-Hair Care Products",
+        "sector": "Personal Care"
+      },
+      {
+        "name": "Dabur Glucose D",
+        "category": "Energy Drink",
+        "sector": "Healthcare"
+      }
+    ]
+  },
+  {
+    "name": "Asianpaints",
+    "products": [
+      {
+        "name": "Asianpaints Apex Floor Guard",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Shyne Dustproof",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Ace Emulsion",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Ace Shyne",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Apcolite Rust Shield PU Enamel",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apcolite Advanced",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apcolite All Protek",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apcolite Advanced Emulsion",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Areatex and Allura",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Dust Proof",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Ultima",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Ultima Protek",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Rust Shield",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints home sevice",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Neo bharat latex paint",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Royale Glitz",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Royale Health Shield",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Royale Basecoat",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Safe Painting Service",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Damp Proof",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Hydroloc",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Damp Sheath Exterior",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Damp Sheath Interior",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Tile Adhesive",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Tile grout",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Smart Care Vitalia Neo and Repair Polymer",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Tractor Emulsion",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Tractor Shyne",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Tractor Sparc Emulsion",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Ultima Protek Basecoat",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Ultima Protek Shyne",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Royal Aspira",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Apex Tile Guard",
+        "category": "Building Materials",
+        "sector": "Construction"
+      },
+      {
+        "name": "Asianpaints Silicon Shield Shyne",
+        "category": "Building Materials",
+        "sector": "Construction"
+      }
+    ]
+  },
+  {
+    "name": "Baltra",
+    "products": [
+      {
+        "name": "Baltra Fan",
+        "category": "Consumer Durables-Electrical Appliances",
+        "sector": "Consumer Durables"
+      }
+    ]
+  },
+  {
+    "name": "Agni Group",
+    "products": [
+      {
+        "name": "Agni Group",
+        "category": "Automobile-Dealer",
+        "sector": "Automobile"
+      }
+    ]
+  },
+  {
+    "name": "Dhara Health Oil",
+    "products": [
+      {
+        "name": "Dhara Health Oil",
+        "category": "Cooking Oil",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Vatsalya",
+    "products": [
+      {
+        "name": "Vatsalya",
+        "category": "Organic Dairy Products",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Right Path",
+    "products": [
+      {
+        "name": "Right Path",
+        "category": "Coaching-Education",
+        "sector": "Education"
+      }
+    ]
+  },
+  {
+    "name": "Photex Power",
+    "products": [
+      {
+        "name": "Photex Power",
+        "category": "EV Charging Infrastructure",
+        "sector": "Infrastructure"
+      }
+    ]
+  },
+  {
+    "name": "Emami",
+    "products": [
+      {
+        "name": "Emami Smart And Handsome Cream",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      },
+      {
+        "name": "Emami Smart And Handsome Facewash",
+        "category": "Personal Care-Skin Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Citizen Life",
+    "products": [
+      {
+        "name": "Citizen Life",
+        "category": "Finance-Insurance",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "KIEC",
+    "products": [
+      {
+        "name": "KEIC",
+        "category": "Education-Consultancy",
+        "sector": "Education"
+      }
+    ]
+  },
+  {
+    "name": "Kamasutra",
+    "products": [
+      {
+        "name": "Kamasutra",
+        "category": "Intimate Products",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "MGS5 EV",
+    "products": [
+      {
+        "name": "MGS5 EV",
+        "category": "Automobile-EV",
+        "sector": "Automobile"
+      }
+    ]
+  },
+  {
+    "name": "Mahindra",
+    "products": [
+      {
+        "name": "Mahindra XUV400",
+        "category": "Automobile-Cars",
+        "sector": "Automobile"
+      },
+      {
+        "name": "Mahindra XUV700",
+        "category": "Automobile-Cars",
+        "sector": "Automobile"
+      }
+    ]
+  },
+  {
+    "name": "Prabhu Bank",
+    "products": [
+      {
+        "name": "Prabhu Bank",
+        "category": "Digital Payment",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "Dermi Cool",
+    "products": [
+      {
+        "name": "Dermi Cool",
+        "category": "Personal Care-Hair Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Navratna Oil",
+    "products": [
+      {
+        "name": "Navratna Oil",
+        "category": "Personal Care-Hair Care",
+        "sector": "Personal Care"
+      }
+    ]
+  },
+  {
+    "name": "Digital WorldLink",
+    "products": [
+      {
+        "name": "Digital Worldlink",
+        "category": "Services-Internet",
+        "sector": "Telecommunication"
+      }
+    ]
+  },
+  {
+    "name": "BYD",
+    "products": [
+      {
+        "name": "BYD Atto 3",
+        "category": "Automobile-Cars",
+        "sector": "Automobile"
+      }
+    ]
+  },
+  {
+    "name": "Hero",
+    "products": [
+      {
+        "name": "Hero Xoom",
+        "category": "Automobile-Scooters",
+        "sector": "Automobile"
+      },
+      {
+        "name": "Hero Xstream 125",
+        "category": "Automobile-Motorcycle",
+        "sector": "Automobile"
+      }
+    ]
+  },
+  {
+    "name": "KFC",
+    "products": [
+      {
+        "name": "KFC",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Nashville Zinger",
+    "products": [
+      {
+        "name": "Nashville Zinger",
+        "category": "Food & Beverage",
+        "sector": "FMCG"
+      }
+    ]
+  },
+  {
+    "name": "Ncell",
+    "products": [
+      {
+        "name": "Ncell",
+        "category": "Mobile Network",
+        "sector": "Telecommunication"
+      }
+    ]
+  },
+  {
+    "name": "Sarvottam Steel",
+    "products": [
+      {
+        "name": "Sarvottam Steel",
+        "category": "Building Materials",
+        "sector": "Construction"
+      }
+    ]
+  },
+  {
+    "name": "Sunlife",
+    "products": [
+      {
+        "name": "SunLife",
+        "category": "Finance-Insurance",
+        "sector": "Finance"
+      }
+    ]
+  },
+  {
+    "name": "United Cement",
+    "products": [
+      {
+        "name": "United Cement",
+        "category": "Building Materials",
+        "sector": "Construction"
+      }
+    ]
+  }
+]
