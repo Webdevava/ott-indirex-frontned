@@ -153,6 +153,10 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
 
   const labelType = form.watch("label_type");
   const selectedBrand = form.watch("ad.brand");
+  const selectedProduct = form.watch("ad.product");
+
+  // Watch all form values to determine if form is valid
+  const watchedValues = form.watch();
 
   // Load brands data
   useEffect(() => {
@@ -170,6 +174,20 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
 
     loadBrandsData();
   }, []);
+
+  // Auto-select category and sector when product is selected
+  useEffect(() => {
+    if (selectedBrand && selectedBrand !== "other" && selectedProduct) {
+      const brand = brandsData.find(b => b.name === selectedBrand);
+      if (brand) {
+        const product = brand.products.find(p => p.name === selectedProduct);
+        if (product) {
+          form.setValue("ad.category", product.category);
+          form.setValue("ad.sector", product.sector);
+        }
+      }
+    }
+  }, [selectedProduct, selectedBrand, brandsData, form]);
 
   // Get unique brand options
   const brandOptions = [
@@ -195,20 +213,71 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
     : [];
 
   // Get categories for selected brand
-  const categoryOptions = selectedBrand && selectedBrand !== "other"
-    ? [...new Set(getProductsForBrand(selectedBrand).map(p => p.category))].map(category => ({
-        value: category,
-        label: category
-      }))
-    : [];
+  // const categoryOptions = selectedBrand && selectedBrand !== "other"
+  //   ? [...new Set(getProductsForBrand(selectedBrand).map(p => p.category))].map(category => ({
+  //       value: category,
+  //       label: category
+  //     }))
+  //   : [];
 
   // Get sectors for selected brand
-  const sectorOptions = selectedBrand && selectedBrand !== "other"
-    ? [...new Set(getProductsForBrand(selectedBrand).map(p => p.sector))].map(sector => ({
-        value: sector,
-        label: sector
-      }))
-    : [];
+  // const sectorOptions = selectedBrand && selectedBrand !== "other"
+  //   ? [...new Set(getProductsForBrand(selectedBrand).map(p => p.sector))].map(sector => ({
+  //       value: sector,
+  //       label: sector
+  //     }))
+  //   : [];
+
+  // Check if form is valid for submission
+  const isFormValid = () => {
+    if (!labelType) return false;
+
+    switch (labelType) {
+      case "song":
+        return !!(
+          watchedValues.song?.song_name &&
+          watchedValues.song?.artist &&
+          watchedValues.song?.album &&
+          watchedValues.song?.language &&
+          watchedValues.song?.release_year
+        );
+      
+      case "ad":
+        const adValid = !!(
+          watchedValues.ad?.type &&
+          watchedValues.ad?.brand &&
+          watchedValues.ad?.format
+        );
+        
+        if (isCustomBrand) {
+          return adValid && !!(
+            watchedValues.ad?.product &&
+            watchedValues.ad?.category &&
+            watchedValues.ad?.sector
+          );
+        } else if (watchedValues.ad?.brand && watchedValues.ad?.brand !== "other") {
+          return adValid && !!(
+            watchedValues.ad?.product &&
+            watchedValues.ad?.category &&
+            watchedValues.ad?.sector
+          );
+        }
+        return adValid;
+      
+      case "error":
+        return !!(watchedValues.error?.error_type);
+      
+      case "program":
+        return !!(
+          watchedValues.program?.program_name &&
+          watchedValues.program?.genre &&
+          watchedValues.program?.language
+        );
+      
+      default:
+        return false;
+    }
+  };
 
   const onSubmit = async (data: CreateLabel) => {
     setIsSubmitting(true);
@@ -307,7 +376,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="song.song_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Song Name</FormLabel>
+                          <FormLabel>Song Name *</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} placeholder="Enter song name" disabled={isSubmitting} />
                           </FormControl>
@@ -320,7 +389,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="song.artist"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Artist</FormLabel>
+                          <FormLabel>Artist *</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} placeholder="Enter artist" disabled={isSubmitting} />
                           </FormControl>
@@ -333,7 +402,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="song.album"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Album</FormLabel>
+                          <FormLabel>Album *</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} placeholder="Enter album" disabled={isSubmitting} />
                           </FormControl>
@@ -346,7 +415,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="song.language"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Language</FormLabel>
+                          <FormLabel>Language *</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} placeholder="Enter language" disabled={isSubmitting} />
                           </FormControl>
@@ -359,7 +428,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="song.release_year"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Release Year</FormLabel>
+                          <FormLabel>Release Year *</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -384,7 +453,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="ad.type"
                       render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                          <FormLabel>Ad Type</FormLabel>
+                          <FormLabel>Ad Type *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
                             <FormControl>
                               <SelectTrigger>
@@ -407,7 +476,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="ad.brand"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Brand</FormLabel>
+                          <FormLabel>Brand *</FormLabel>
                           <FormControl>
                             <Combobox
                               value={field.value ?? ""}
@@ -430,7 +499,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                           name="ad.product"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Product</FormLabel>
+                              <FormLabel>Product *</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} placeholder="Enter product" disabled={isSubmitting} />
                               </FormControl>
@@ -443,7 +512,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                           name="ad.category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Category</FormLabel>
+                              <FormLabel>Category *</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} placeholder="Enter category" disabled={isSubmitting} />
                               </FormControl>
@@ -456,7 +525,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                           name="ad.sector"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Sector</FormLabel>
+                              <FormLabel>Sector *</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} placeholder="Enter sector" disabled={isSubmitting} />
                               </FormControl>
@@ -473,7 +542,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                             name="ad.product"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Product</FormLabel>
+                                <FormLabel>Product *</FormLabel>
                                 <FormControl>
                                   <Combobox
                                     value={field.value ?? ""}
@@ -495,13 +564,12 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                               <FormItem>
                                 <FormLabel>Category</FormLabel>
                                 <FormControl>
-                                  <Combobox
-                                    value={field.value ?? ""}
-                                    onValueChange={field.onChange}
-                                    options={categoryOptions}
-                                    placeholder="Select category..."
-                                    searchPlaceholder="Search categories..."
-                                    disabled={isSubmitting}
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ""} 
+                                    placeholder="Auto-selected based on product" 
+                                    disabled={true}
+                                    className="bg-gray-50"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -515,13 +583,12 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                               <FormItem>
                                 <FormLabel>Sector</FormLabel>
                                 <FormControl>
-                                  <Combobox
-                                    value={field.value ?? ""}
-                                    onValueChange={field.onChange}
-                                    options={sectorOptions}
-                                    placeholder="Select sector..."
-                                    searchPlaceholder="Search sectors..."
-                                    disabled={isSubmitting}
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ""} 
+                                    placeholder="Auto-selected based on product" 
+                                    disabled={true}
+                                    className="bg-gray-50"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -537,7 +604,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="ad.format"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Format</FormLabel>
+                          <FormLabel>Format *</FormLabel>
                           <Select 
                             onValueChange={field.onChange} 
                             value={field.value || ""} 
@@ -566,7 +633,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                     name="error.error_type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Error Type</FormLabel>
+                        <FormLabel>Error Type *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
                           <FormControl>
                             <SelectTrigger>
@@ -593,7 +660,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="program.program_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Program Name</FormLabel>
+                          <FormLabel>Program Name *</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} placeholder="Enter program name" disabled={isSubmitting} />
                           </FormControl>
@@ -606,7 +673,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="program.genre"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Genre</FormLabel>
+                          <FormLabel>Genre *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value || ""} disabled={isSubmitting}>
                             <FormControl>
                               <SelectTrigger>
@@ -689,7 +756,7 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
                       name="program.language"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Language</FormLabel>
+                          <FormLabel>Language *</FormLabel>
                           <FormControl>
                             <Input {...field} value={field.value ?? ""} placeholder="Enter language" disabled={isSubmitting} />
                           </FormControl>
@@ -725,7 +792,10 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || !isFormValid()}
+              >
                 {isSubmitting ? "Creating..." : "Create Label"}
               </Button>
             </DialogFooter>

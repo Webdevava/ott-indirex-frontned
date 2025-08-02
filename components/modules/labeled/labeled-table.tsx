@@ -57,7 +57,6 @@ import {
   LabelProgram,
   GetLabelsOptions,
 } from "@/services/labels.service";
-import { LabelEventsDialog } from "@/components/modules/labeling/label-event-dialog";
 import EventFilters from "../labeling/unlabeled-filters";
 // import EventFilters from "./event-filters";
 
@@ -149,9 +148,7 @@ const columns: ColumnDef<LabelWithDetails>[] = [
         case "ad":
           return (
             <div className="text-sm">
-              <span className="font-medium">
-                {(details as LabelAd).brand}
-              </span>
+              <span className="font-medium">{(details as LabelAd).brand}</span>
               <span className="text-muted-foreground ml-2">
                 ({(details as LabelAd).type})
               </span>
@@ -279,6 +276,16 @@ function ViewLabelDialog({ label }: { label: LabelWithDetails }) {
     }
   }, [open, label.image_paths]);
 
+function convertUnixToNPT(unixTimestamp: string | number = label.end_time) {
+  const timestampInSeconds = typeof unixTimestamp === "string" ? parseInt(unixTimestamp, 10) : unixTimestamp;
+  const date = new Date(timestampInSeconds * 1000);
+
+  return date.toLocaleString("en-IN", {
+    timeZone: "Asia/Kathmandu",
+  });
+}
+
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -315,11 +322,11 @@ function ViewLabelDialog({ label }: { label: LabelWithDetails }) {
             </div>
             <div>
               <p className="font-medium">From</p>
-              <p>{new Date(label.start_time).toLocaleString()}</p>
+              <p>{convertUnixToNPT(label.start_time)}</p>
             </div>
             <div>
               <p className="font-medium">To</p>
-              <p>{new Date(label.end_time).toLocaleString()}</p>
+              <p>{convertUnixToNPT(label.end_time)}</p>
             </div>
             <div>
               <p className="font-medium">Event IDs</p>
@@ -586,27 +593,23 @@ function LabeledEventsTableContent() {
     <div className="space-y-4">
       {/* Selection Bar */}
       {selectedRowsCount > 0 && (
-      <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className="font-medium">{selectedRowsCount} selected</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-              >
-                Delete Labels
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.toggleAllPageRowsSelected(false)}
-              >
-                Clear
-              </Button>
-            </div>
+        <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="font-medium">{selectedRowsCount} selected</span>
           </div>
+          <div className="flex items-center gap-2">
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+              Delete Labels
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.toggleAllPageRowsSelected(false)}
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Filters Status */}

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -51,6 +52,20 @@ interface EventFiltersProps {
   initialFilters?: GetUnlabeledEventsOptions;
 }
 
+// Helper function to get URL parameters
+function getUrlParams() {
+  if (typeof window === 'undefined') return {};
+  
+  const params = new URLSearchParams(window.location.search);
+  const urlParams: { [key: string]: string } = {};
+  
+  for (const [key, value] of params.entries()) {
+    urlParams[key] = value;
+  }
+  
+  return urlParams;
+}
+
 // Helper function to get default date (today)
 function getDefaultDate(): Date {
   return new Date();
@@ -77,6 +92,22 @@ function extractTime(date: Date | string): string {
   return formatTimeFromDate(date as Date);
 }
 
+// Helper function to parse date from URL parameter
+function parseDateFromUrl(dateStr: string): Date | null {
+  try {
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? null : date;
+  } catch {
+    return null;
+  }
+}
+
+// Helper function to validate time format (HH:MM)
+function isValidTimeFormat(timeStr: string): boolean {
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  return timeRegex.test(timeStr);
+}
+
 export default function EventFilters({ 
   onFilterChange, 
   userRole,
@@ -85,40 +116,102 @@ export default function EventFilters({
   const [isOpen, setIsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Get default values
-  const defaultDate = getDefaultDate();
-  const defaultStartTime = "00:00";
-  const defaultEndTime = "23:59";
+  // Get URL parameters
+  const urlParams = getUrlParams();
+
+  // Get default values with URL priority
+  const getInitialValues = () => {
+    const defaultDate = getDefaultDate();
+    const defaultStartTime = "00:00";
+    const defaultEndTime = "23:59";
+    const defaultSort = "asc"; // Default to ascending
+
+    // Priority 1: URL parameters
+    let initialDate = defaultDate;
+    let initialStartTime = defaultStartTime;
+    let initialEndTime = defaultEndTime;
+    let initialSort = defaultSort;
+    let initialDeviceId = "";
+
+    // Check URL for date
+    if (urlParams.date) {
+      const urlDate = parseDateFromUrl(urlParams.date);
+      if (urlDate) {
+        initialDate = urlDate;
+      }
+    }
+
+    // Check URL for start time
+    if (urlParams.startTime && isValidTimeFormat(urlParams.startTime)) {
+      initialStartTime = urlParams.startTime;
+    }
+
+    // Check URL for end time
+    if (urlParams.endTime && isValidTimeFormat(urlParams.endTime)) {
+      initialEndTime = urlParams.endTime;
+    }
+
+    // Check URL for sort
+    if (urlParams.sort && (urlParams.sort === "asc" || urlParams.sort === "desc")) {
+      initialSort = urlParams.sort;
+    }
+
+    // Check URL for device ID
+    if (urlParams.deviceId) {
+      initialDeviceId = urlParams.deviceId;
+    }
+
+    return {
+      date: initialDate,
+      startTime: initialStartTime,
+      endTime: initialEndTime,
+      sort: initialSort as "asc" | "desc",
+      deviceId: initialDeviceId,
+    };
+  };
 
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterSchema),
     defaultValues: {
       deviceId: "",
-      sort: undefined,
-      date: defaultDate,
-      startTime: defaultStartTime,
-      endTime: defaultEndTime,
+      sort: "asc", // Default to ascending
+      date: getDefaultDate(),
+      startTime: "00:00",
+      endTime: "23:59",
     },
   });
 
-  // Initialize form with initial filters or defaults
+  // Initialize form with URL parameters, initial filters, or defaults
   useEffect(() => {
     if (!isInitialized) {
       let formData: Partial<FilterFormValues> = {};
 
+      // Get initial values (URL has priority, but only read once on mount)
+      const initialValues = getInitialValues();
+
+      // Priority 1: URL parameters
+      formData = {
+        date: initialValues.date,
+        startTime: initialValues.startTime,
+        endTime: initialValues.endTime,
+        sort: initialValues.sort,
+        deviceId: initialValues.deviceId,
+      };
+
+      // Priority 2: Override with initial filters if provided and URL doesn't have them
       if (Object.keys(initialFilters).length > 0) {
         // Set device ID for ADMIN only (ANNOTATOR deviceId is handled in service layer)
-        if (userRole === "ADMIN" && initialFilters.deviceId) {
+        if (userRole === "ADMIN" && initialFilters.deviceId && !urlParams.deviceId) {
           formData.deviceId = initialFilters.deviceId;
         }
 
-        // Set sort
-        if (initialFilters.sort) {
+        // Set sort if not in URL
+        if (initialFilters.sort && !urlParams.sort) {
           formData.sort = initialFilters.sort;
         }
 
-        // Set date and times from initial filters
-        if (initialFilters.startDate) {
+        // Set date and times from initial filters if not in URL
+        if (initialFilters.startDate && !urlParams.date && !urlParams.startTime) {
           const startDate = typeof initialFilters.startDate === 'string' 
             ? new Date(initialFilters.startDate) 
             : initialFilters.startDate;
@@ -127,36 +220,24 @@ export default function EventFilters({
           formData.startTime = extractTime(startDate);
         }
 
-        if (initialFilters.endDate) {
+        if (initialFilters.endDate && !urlParams.endTime) {
           const endDate = typeof initialFilters.endDate === 'string' 
             ? new Date(initialFilters.endDate) 
             : initialFilters.endDate;
           
           formData.endTime = extractTime(endDate);
         }
-      } else {
-        // Set defaults
-        formData = {
-          deviceId: "",
-          sort: undefined,
-          date: defaultDate,
-          startTime: defaultStartTime,
-          endTime: defaultEndTime,
-        };
       }
 
       // Reset form with the calculated values
       form.reset(formData);
       setIsInitialized(true);
 
-      // If we have meaningful initial data, apply it immediately
-      if (Object.keys(initialFilters).length === 0) {
-        // Only auto-apply if no initial filters were provided
-        const filters = buildFilters(formData as FilterFormValues);
-        onFilterChange(filters);
-      }
+      // Apply filters immediately with the initial values
+      const filters = buildFilters(formData as FilterFormValues);
+      onFilterChange(filters);
     }
-  }, [initialFilters, userRole, form, isInitialized, onFilterChange, defaultDate]);
+  }, [initialFilters, userRole, form, isInitialized, onFilterChange]);
 
   const buildFilters = (data: FilterFormValues): GetUnlabeledEventsOptions => {
     const startDateTime = new Date(data.date);
@@ -184,10 +265,10 @@ export default function EventFilters({
   const onClear = () => {
     const defaultData = {
       deviceId: "",
-      sort: undefined,
-      date: defaultDate,
-      startTime: defaultStartTime,
-      endTime: defaultEndTime,
+      sort: "asc" as const, // Default to ascending
+      date: getDefaultDate(),
+      startTime: "00:00",
+      endTime: "23:59",
     };
     
     form.reset(defaultData);
