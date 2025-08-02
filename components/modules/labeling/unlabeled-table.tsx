@@ -103,18 +103,18 @@ const columns: ColumnDef<Event>[] = [
     size: 140,
     enableSorting: false,
   },
-// {
-//   header: "Type",
-//   accessorKey: "type",
-//   cell: ({ row }) => {
-//     const type = row.getValue("type") as number;
-//     const label = type === 29 ? "Recognized" : type === 33 ? "Unrecognized" : "Unknown";
-    
-//     return <Badge variant="outline">{label}</Badge>;
-//   },
-//   size: 80,
-//   enableSorting: false,
-// },
+  // {
+  //   header: "Type",
+  //   accessorKey: "type",
+  //   cell: ({ row }) => {
+  //     const type = row.getValue("type") as number;
+  //     const label = type === 29 ? "Recognized" : type === 33 ? "Unrecognized" : "Unknown";
+
+  //     return <Badge variant="outline">{label}</Badge>;
+  //   },
+  //   size: 80,
+  //   enableSorting: false,
+  // },
   {
     header: "Max Score",
     accessorKey: "max_score",
@@ -162,7 +162,7 @@ const columns: ColumnDef<Event>[] = [
     enableSorting: false,
   },
 
-   {
+  {
     header: "Ads",
     accessorKey: "ads",
     cell: ({ row }) => {
@@ -187,29 +187,30 @@ const columns: ColumnDef<Event>[] = [
     // size: 150,
     enableSorting: false,
   },
-//   {
-//     header: "Created At",
-//     accessorKey: "created_at",
-//     cell: ({ row }) => {
-//       const date = new Date(row.getValue("created_at"));
-//       return (
-//         <div className="text-sm">
-//           {date.toLocaleDateString()} {date.toLocaleTimeString()}
-//         </div>
-//       );
-//     },
-//     size: 160,
-//     enableSorting: false,
-//   },
+  //   {
+  //     header: "Created At",
+  //     accessorKey: "created_at",
+  //     cell: ({ row }) => {
+  //       const date = new Date(row.getValue("created_at"));
+  //       return (
+  //         <div className="text-sm">
+  //           {date.toLocaleDateString()} {date.toLocaleTimeString()}
+  //         </div>
+  //       );
+  //     },
+  //     size: 160,
+  //     enableSorting: false,
+  //   },
   {
     header: "TimeStamp",
     accessorKey: "timestamp",
     cell: ({ row }) => {
       const unixTimestamp = row.getValue("timestamp") as number;
       const date = new Date(unixTimestamp * 1000);
-      const humanReadable = date.toLocaleString("en-IN", {
-        timeZone: "UTC",
-      });
+const humanReadable = date.toLocaleString("en-IN", {
+  timeZone: "Asia/Kathmandu",
+});
+
 
       return <div className="text-sm">{humanReadable} NPT</div>;
     },
@@ -280,7 +281,9 @@ function getCookie(name: string): string | null {
 
 // Helper function to format time to HH:MM in local timezone
 function formatTime(date: Date): string {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes()
+  ).padStart(2, "0")}`;
 }
 
 function EventTableContent() {
@@ -347,8 +350,24 @@ function EventTableContent() {
     // Set default filters if no URL params
     if (Object.keys(urlFilters).length === 0) {
       const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
-      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      const startOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
+      const endOfDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        23,
+        59,
+        59,
+        999
+      );
 
       urlFilters.startDate = startOfDay;
       urlFilters.endDate = endOfDay;
@@ -372,7 +391,13 @@ function EventTableContent() {
         newFilters.startDate instanceof Date
           ? newFilters.startDate
           : new Date(newFilters.startDate);
-      params.set("startDate", `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`);
+      params.set(
+        "startDate",
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(date.getDate()).padStart(2, "0")}`
+      );
       params.set("startTime", formatTime(date));
     }
     if (newFilters.endDate) {
@@ -448,31 +473,31 @@ function EventTableContent() {
   return (
     <div className="space-y-4 relative">
       {/* Selection Bar */}
-{selectedRowsCount > 0 && (
- <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="font-medium">{selectedRowsCount} selected</span>
+      {selectedRowsCount > 0 && (
+        <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="font-medium">{selectedRowsCount} selected</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <LabelEventsDialog
+              selectedEventIds={table
+                .getFilteredSelectedRowModel()
+                .rows.map((row) => row.original.id)}
+              onSuccess={() => {
+                table.toggleAllPageRowsSelected(false);
+                fetchEvents(); // Refresh table data
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.toggleAllPageRowsSelected(false)}
+            >
+              Clear
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <LabelEventsDialog
-            selectedEventIds={table
-              .getFilteredSelectedRowModel()
-              .rows.map((row) => row.original.id)}
-            onSuccess={() => {
-              table.toggleAllPageRowsSelected(false);
-              fetchEvents(); // Refresh table data
-            }}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.toggleAllPageRowsSelected(false)}
-          >
-            Clear
-          </Button>
-        </div>
-      </div>
-  )}
+      )}
 
       {/* Filters Status */}
       <div className="flex items-center justify-between gap-3 max-sm:flex-col">
