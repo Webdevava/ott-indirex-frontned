@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
 import * as React from "react"
-import { SquareTerminal, Bot, Users, PieChart, Command } from "lucide-react"
+import { SquareTerminal, Bot, Users, PieChart, Command, List, Cpu } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -13,17 +13,22 @@ import {
 } from "@/components/ui/sidebar"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import Cookies from 'js-cookie'
 
 const navMain = [
   {
     title: "Dashboard",
     url: "/dashboard",
     icon: SquareTerminal,
-    isActive: true,
+  },
+  {
+    title: "Live Stream",
+    url: "/live-stream",
+    icon: List,
   },
   {
     title: "Annotations",
-    url: "#", // Non-navigable since it has sub-items
+    url: "#",
     icon: Bot,
     items: [
       {
@@ -42,6 +47,11 @@ const navMain = [
     icon: Users,
   },
   {
+    title: "Device Management",
+    url: "/device-management",
+    icon: Cpu,
+  },
+  {
     title: "Reports",
     url: "/reports",
     icon: PieChart,
@@ -49,6 +59,14 @@ const navMain = [
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // Get user role from cookies
+  const userRole = Cookies.get('auth_user_role')
+
+  // Filter nav items based on role
+  const filteredNavMain = userRole === 'ADMIN'
+    ? navMain
+    : navMain.filter(item => item.title === 'Annotations')
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -69,7 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} />
+        <NavMain items={filteredNavMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

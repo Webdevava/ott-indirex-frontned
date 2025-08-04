@@ -10,47 +10,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserPlus, Loader2 } from "lucide-react";
+import { Monitor, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { AuthService, User, UsersListResponse } from "@/services/auth.service";
-import { UserTable } from "@/components/modules/user-management/user-table";
-import { AddUserDialog } from "@/components/modules/user-management/add-user-dialog";
+import {
+  DeviceService,
+  Device,
+  DevicesListResponse,
+} from "@/services/device.service";
+import { DeviceTable } from "@/components/modules/device-management/device-table";
+import { AddDeviceDialog } from "@/components/modules/device-management/add-device-dialog";
 import { Separator } from "@/components/ui/separator";
 
-export default function UserManagement() {
-  const [users, setUsers] = useState<User[]>([]);
+export default function DeviceManagement() {
+  const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("ALL"); // Initialize with "ALL"
+  const [activeFilter, setActiveFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const fetchUsers = async (
+  const fetchDevices = async (
     page = 1,
     search = searchTerm,
-    role = roleFilter === "ALL" ? undefined : roleFilter
+    isActive = activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE"
   ) => {
     setLoading(true);
     try {
-      const response: UsersListResponse = await AuthService.getAllUsers({
+      const response: DevicesListResponse = await DeviceService.getAllDevices({
         page,
         limit: 10,
-        search: search || undefined,
-        role: role || undefined,
+        isActive: isActive,
       });
 
       if (response.success && response.data) {
-        setUsers(response.data.users);
+        setDevices(response.data.devices);
         setTotalPages(response.data.totalPages);
         setCurrentPage(page);
       } else {
-        toast.error(response.message || "Failed to fetch users");
+        toast.error(response.message || "Failed to fetch devices");
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching devices:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to fetch users"
+        error instanceof Error ? error.message : "Failed to fetch devices"
       );
     } finally {
       setLoading(false);
@@ -58,49 +61,72 @@ export default function UserManagement() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchDevices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps intentional: Initial fetch only, updates handled via handleSearch/handleRoleFilterChange
+  }, []); // Empty deps intentional: Initial fetch only, updates handled via handlers
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchUsers(1, searchTerm, roleFilter === "ALL" ? undefined : roleFilter);
+    fetchDevices(
+      1,
+      searchTerm,
+      activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE"
+    );
   };
 
-  const handleRoleFilterChange = (role: string) => {
-    setRoleFilter(role);
+  const handleActiveFilterChange = (value: string) => {
+    setActiveFilter(value);
     setCurrentPage(1);
-    fetchUsers(1, searchTerm, role === "ALL" ? undefined : role);
+    fetchDevices(
+      1,
+      searchTerm,
+      value === "ALL" ? undefined : value === "ACTIVE"
+    );
   };
 
   const handlePageChange = (page: number) => {
-    fetchUsers(page, searchTerm, roleFilter === "ALL" ? undefined : roleFilter);
+    fetchDevices(
+      page,
+      searchTerm,
+      activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE"
+    );
   };
 
-  const handleUserAdded = () => {
-    fetchUsers(currentPage, searchTerm, roleFilter === "ALL" ? undefined : roleFilter);
+  const handleDeviceAdded = () => {
+    fetchDevices(
+      currentPage,
+      searchTerm,
+      activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE"
+    );
   };
 
-  const handleUserUpdated = () => {
-    fetchUsers(currentPage, searchTerm, roleFilter === "ALL" ? undefined : roleFilter);
+  const handleDeviceUpdated = () => {
+    fetchDevices(
+      currentPage,
+      searchTerm,
+      activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE"
+    );
   };
 
-  const handleUserDeleted = () => {
-    fetchUsers(currentPage, searchTerm, roleFilter === "ALL" ? undefined : roleFilter);
+  const handleDeviceDeleted = () => {
+    fetchDevices(
+      currentPage,
+      searchTerm,
+      activeFilter === "ALL" ? undefined : activeFilter === "ACTIVE"
+    );
   };
 
   return (
     <div className="container mx-auto p-4">
-
-              <div className="mb-4">
-        <h1 className="text-2xl font-bold">User Management</h1>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold">Device Management</h1>
         <Separator />
       </div>
       <div>
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex flex-1 items-center space-x-2">
             <Input
-              placeholder="Search users..."
+              placeholder="Search devices..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -110,20 +136,20 @@ export default function UserManagement() {
               Search
             </Button>
           </div>
-          <Select value={roleFilter} onValueChange={handleRoleFilterChange}>
+          <Select value={activeFilter} onValueChange={handleActiveFilterChange}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by role" />
+              <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Roles</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="ANNOTATOR">Annotator</SelectItem>
+              <SelectItem value="ALL">All Statuses</SelectItem>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="INACTIVE">Inactive</SelectItem>
             </SelectContent>
           </Select>
 
           <Button onClick={() => setShowAddDialog(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add User
+            <Monitor className="mr-2 h-4 w-4" />
+            Add Device
           </Button>
         </div>
 
@@ -131,16 +157,16 @@ export default function UserManagement() {
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-        ) : users.length === 0 ? (
+        ) : devices.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            No users found matching your criteria.
+            No devices found matching your criteria.
           </div>
         ) : (
           <>
-            <UserTable
-              users={users}
-              onUserUpdated={handleUserUpdated}
-              onUserDeleted={handleUserDeleted}
+            <DeviceTable
+              devices={devices}
+              onDeviceUpdated={handleDeviceUpdated}
+              onDeviceDeleted={handleDeviceDeleted}
             />
 
             {totalPages > 1 && (
@@ -170,10 +196,10 @@ export default function UserManagement() {
         )}
       </div>
 
-      <AddUserDialog
+      <AddDeviceDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
-        onUserAdded={handleUserAdded}
+        onDeviceAdded={handleDeviceAdded}
       />
     </div>
   );

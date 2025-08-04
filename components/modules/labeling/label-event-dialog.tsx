@@ -315,6 +315,12 @@ export function LabelEventsDialog({ selectedEventIds, onSuccess }: LabelEventsDi
     }
   };
 
+
+  useEffect(() => {
+  form.setValue("event_ids", selectedEventIds);
+}, [selectedEventIds, form]);
+
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

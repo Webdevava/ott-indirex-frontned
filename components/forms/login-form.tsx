@@ -1,44 +1,49 @@
 'use client'
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AuthService } from "@/services/auth.service";
+  CardDescription,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AuthService } from "@/services/auth.service"
+import Cookies from 'js-cookie'
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
     try {
-      // Fix: Pass email and password as separate arguments
-      await AuthService.login(email, password);
-      router.push("/annotations/labeling");
+      await AuthService.login(email, password)
+      // Get user role from cookies after successful login
+      const userRole = Cookies.get('auth_user_role')
+      // Redirect based on role
+      const redirectPath = userRole === 'ADMIN' ? '/dashboard' : '/annotations/labeling'
+      router.push(redirectPath)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Login failed")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -65,8 +70,7 @@ export function LoginForm({
                 />
               </div>
               <div className="grid gap-3">
-                  <Label htmlFor="password">Password</Label>
-
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -87,5 +91,5 @@ export function LoginForm({
         and <a href="#">Privacy Policy</a>.
       </div>
     </div>
-  );
+  )
 }

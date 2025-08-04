@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ColumnDef,
@@ -12,14 +12,13 @@ import {
   PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { usePagination } from "@/hooks/use-pagination";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Pagination,
   PaginationContent,
@@ -43,53 +42,13 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
-  LabelService,
-  GetUnlabeledEventsOptions,
-} from "@/services/labels.service";
-import { LabelEventsDialog } from "./label-event-dialog";
-import EventFilters from "./unlabeled-filters";
-
-type Event = {
-  id: string;
-  device_id: string;
-  timestamp: string;
-  type: number;
-  image_path: string;
-  max_score: number;
-  created_at: string;
-  ads: any[];
-  channels: Array<{
-    id: number;
-    event_id: string;
-    name: string;
-    score: number;
-  }>;
-  content: any[];
-};
+  EventService,
+  GetEventsOptions,
+  Event,
+} from "@/services/events.service";
+import DeviceEventFilters from "./device-event-filters";
 
 const columns: ColumnDef<Event>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all rows"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    size: 28,
-    enableSorting: false,
-  },
   {
     header: "Event ID",
     accessorKey: "id",
@@ -103,32 +62,32 @@ const columns: ColumnDef<Event>[] = [
     size: 140,
     enableSorting: false,
   },
-  // {
-  //   header: "Type",
-  //   accessorKey: "type",
-  //   cell: ({ row }) => {
-  //     const type = row.getValue("type") as number;
-  //     const label = type === 29 ? "Recognized" : type === 33 ? "Unrecognized" : "Unknown";
+  {
+    header: "Type",
+    accessorKey: "type",
+    cell: ({ row }) => {
+      const type = row.getValue("type") as number;
+      const label = type === 29 ? "Recognized" : type === 33 ? "Unrecognized" : "Unknown";
 
-  //     return <Badge variant="outline">{label}</Badge>;
-  //   },
-  //   size: 80,
-  //   enableSorting: false,
-  // },
+      return <Badge variant="outline">{label}</Badge>;
+    },
+    size: 120,
+    enableSorting: false,
+  },
   {
     header: "Max Score",
     accessorKey: "max_score",
     cell: ({ row }) => {
-      const score = parseFloat(row.getValue("max_score"));
+      const score = row.getValue("max_score") as number | null;
       return (
         <div className="flex items-center">
           <span
             className={cn(
               "font-medium",
-              score === 0 ? "text-muted-foreground" : "text-foreground"
+              score === null || score === 0 ? "text-muted-foreground" : "text-foreground"
             )}
           >
-            {score.toFixed(2)}
+            {score !== null ? score.toFixed(2) : "N/A"}
           </span>
         </div>
       );
@@ -144,12 +103,14 @@ const columns: ColumnDef<Event>[] = [
       return (
         <div className="space-y-1">
           {channels.length > 0 ? (
-            channels.map((channel) => (
+            channels.map((channel: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; score: number | null; }) => (
               <div key={channel.id} className="text-sm">
                 <span className="font-medium">{channel.name}</span>
-                <span className="text-muted-foreground ml-2">
-                  ({channel.score.toFixed(2)})
-                </span>
+                {channel.score !== null && (
+                  <span className="text-muted-foreground ml-2">
+                    ({channel.score.toFixed(2)})
+                  </span>
+                )}
               </div>
             ))
           ) : (
@@ -161,7 +122,6 @@ const columns: ColumnDef<Event>[] = [
     size: 200,
     enableSorting: false,
   },
-
   {
     header: "Ads",
     accessorKey: "ads",
@@ -170,12 +130,14 @@ const columns: ColumnDef<Event>[] = [
       return (
         <div className="space-y-1">
           {ads.length > 0 ? (
-            ads.map((ad) => (
+            ads.map((ad: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; score: number | null; }) => (
               <div key={ad.id} className="text-sm">
                 <span className="font-medium">{ad.name}</span>
-                <span className="text-muted-foreground ml-2">
-                  ({ad.score.toFixed(2)})
-                </span>
+                {ad.score !== null && (
+                  <span className="text-muted-foreground ml-2">
+                    ({ad.score.toFixed(2)})
+                  </span>
+                )}
               </div>
             ))
           ) : (
@@ -184,28 +146,75 @@ const columns: ColumnDef<Event>[] = [
         </div>
       );
     },
-    // size: 150,
     enableSorting: false,
   },
-  //   {
-  //     header: "Created At",
-  //     accessorKey: "created_at",
-  //     cell: ({ row }) => {
-  //       const date = new Date(row.getValue("created_at"));
-  //       return (
-  //         <div className="text-sm">
-  //           {date.toLocaleDateString()} {date.toLocaleTimeString()}
-  //         </div>
-  //       );
-  //     },
-  //     size: 160,
-  //     enableSorting: false,
+  {
+    header: "Content",
+    accessorKey: "content",
+    cell: ({ row }) => {
+      const content = row.getValue("content") as Event["content"];
+      return (
+        <div className="space-y-1">
+          {content.length > 0 ? (
+            content.map((item: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; score: number | null; }) => (
+              <div key={item.id} className="text-sm">
+                <span className="font-medium">{item.name}</span>
+                {item.score !== null && (
+                  <span className="text-muted-foreground ml-2">
+                    ({item.score.toFixed(2)})
+                  </span>
+                )}
+              </div>
+            ))
+          ) : (
+            <span className="text-muted-foreground text-sm">No content</span>
+          )}
+        </div>
+      );
+    },
+    enableSorting: false,
+  },
+  // {
+  //   header: "Labels",
+  //   accessorKey: "labels",
+  //   cell: ({ row }) => {
+  //     const labels = row.getValue("labels") as Event["labels"];
+  //     return (
+  //       <div className="space-y-1">
+  //         {labels.length > 0 ? (
+  //           labels.map((label: { id: Key | null | undefined; label_type: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+  //             <Badge key={label.id} variant="secondary" className="text-xs">
+  //               {label.label_type}
+  //             </Badge>
+  //           ))
+  //         ) : (
+  //           <span className="text-muted-foreground text-sm">No labels</span>
+  //         )}
+  //       </div>
+  //     );
   //   },
+  //   size: 150,
+  //   enableSorting: false,
+  // },
+  // {
+  //   header: "Created At",
+  //   accessorKey: "created_at",
+  //   cell: ({ row }) => {
+  //     const date = new Date(row.getValue("created_at"));
+  //     const humanReadable = date.toLocaleString("en-IN", {
+  //       timeZone: "Asia/Kathmandu",
+  //     });
+  //     return <div className="text-sm">{humanReadable} NPT</div>;
+  //   },
+  //   size: 160,
+  //   enableSorting: false,
+  // },
   {
     header: "TimeStamp",
     accessorKey: "timestamp",
     cell: ({ row }) => {
-      const unixTimestamp = row.getValue("timestamp") as number;
+      const timestamp = row.getValue("timestamp") as string;
+      const unixTimestamp = parseInt(timestamp);
       const date = new Date(unixTimestamp * 1000);
       const humanReadable = date.toLocaleString("en-IN", {
         timeZone: "Asia/Kathmandu",
@@ -220,8 +229,7 @@ const columns: ColumnDef<Event>[] = [
     header: "Image",
     accessorKey: "image_path",
     cell: ({ row }) => {
-      const imagePath = row.getValue("image_path") as string;
-      //   const timestamp = row.getValue("timestamp") as number;
+      const imagePath = row.getValue("image_path") as string | null;
       const eventId = row.getValue("id") as string;
 
       if (!imagePath) {
@@ -234,12 +242,13 @@ const columns: ColumnDef<Event>[] = [
             <img
               src={imagePath}
               alt={`Event ${eventId}`}
-              className="w-16 h-12 object-cover rounded border"
+              className="w-16 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
-                (
-                  e.target as HTMLImageElement
-                ).nextElementSibling!.classList.remove("hidden");
+                const parent = (e.target as HTMLImageElement).parentElement;
+                if (parent) {
+                  parent.innerHTML = '<span class="text-muted-foreground text-sm">Image error</span>';
+                }
               }}
             />
           </DialogTrigger>
@@ -247,12 +256,13 @@ const columns: ColumnDef<Event>[] = [
             <img
               src={imagePath}
               alt={`Event ${eventId}`}
-              className="w-full h-full wax-w-6xl object-cover rounded border"
+              className="w-full h-full max-w-6xl object-cover rounded border"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
-                (
-                  e.target as HTMLImageElement
-                ).nextElementSibling!.classList.remove("hidden");
+                const parent = (e.target as HTMLImageElement).parentElement;
+                if (parent) {
+                  parent.innerHTML = '<div class="text-center text-muted-foreground">Failed to load image</div>';
+                }
               }}
             />
           </DialogContent>
@@ -273,11 +283,6 @@ function getCookie(name: string): string | null {
   return null;
 }
 
-// Helper function to get default date (today)
-// function getDefaultDate(): Date {
-//   return new Date();
-// }
-
 // Helper function to format time to HH:MM in local timezone
 function formatTime(date: Date): string {
   return `${String(date.getHours()).padStart(2, "0")}:${String(
@@ -285,7 +290,7 @@ function formatTime(date: Date): string {
   ).padStart(2, "0")}`;
 }
 
-function EventTableContent() {
+function DeviceEventTableContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageSize = 10;
@@ -298,27 +303,29 @@ function EventTableContent() {
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState<GetUnlabeledEventsOptions>({});
-
-  const [selectedEventIds, setSelectedEventIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState<GetEventsOptions>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   // Get user role from cookies
   const userRole = getCookie("auth_user_role");
 
   // Initialize filters from URL params
   useEffect(() => {
-    const urlFilters: GetUnlabeledEventsOptions = {};
+    const urlFilters: GetEventsOptions = {};
 
-    // Get device ID param (only for ADMIN, ANNOTATOR logic is in service)
+    // Get device ID param
     const deviceIdParam = searchParams.get("deviceId");
-    if (userRole === "ADMIN" && deviceIdParam) {
+    if (deviceIdParam) {
       urlFilters.deviceId = deviceIdParam;
     }
 
-    // Get sort param
+    // Get sort param (default to desc for live events)
     const sortParam = searchParams.get("sort");
     if (sortParam === "asc" || sortParam === "desc") {
       urlFilters.sort = sortParam;
+    } else {
+      urlFilters.sort = "desc"; // Default to desc for live events
     }
 
     // Get date and time params
@@ -349,7 +356,7 @@ function EventTableContent() {
     }
 
     // Set default filters if no URL params
-    if (Object.keys(urlFilters).length === 0) {
+    if (!startDateParam || !startTimeParam || !endTimeParam) {
       const today = new Date();
       const startOfDay = new Date(
         today.getFullYear(),
@@ -370,18 +377,22 @@ function EventTableContent() {
         999
       );
 
-      urlFilters.startDate = startOfDay;
-      urlFilters.endDate = endOfDay;
+      if (!urlFilters.startDate) urlFilters.startDate = startOfDay;
+      if (!urlFilters.endDate) urlFilters.endDate = endOfDay;
+    }
+
+    if (!urlFilters.sort) {
+      urlFilters.sort = "desc";
     }
 
     setFilters(urlFilters);
-  }, [searchParams, userRole]);
+  }, [searchParams]);
 
   // Update URL when filters change
-  const updateURLParams = (newFilters: GetUnlabeledEventsOptions) => {
+  const updateURLParams = (newFilters: GetEventsOptions) => {
     const params = new URLSearchParams();
 
-    if (newFilters.deviceId && userRole === "ADMIN") {
+    if (newFilters.deviceId) {
       params.set("deviceId", newFilters.deviceId);
     }
     if (newFilters.sort) {
@@ -415,10 +426,15 @@ function EventTableContent() {
     router.replace(newURL);
   };
 
-  const fetchEvents = async () => {
-    setLoading(true);
+  const fetchEvents = async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) {
+      setIsRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     try {
-      const response = await LabelService.getUnlabeledEvents({
+      const response = await EventService.getEvents({
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
         ...filters,
@@ -428,10 +444,12 @@ function EventTableContent() {
         setData(response.data.events || []);
         setTotalPages(response.data.totalPages || 0);
         setTotal(response.data.total || 0);
+        setLastRefresh(new Date());
       } else {
         setData([]);
         setTotalPages(0);
         setTotal(0);
+        toast.error(response.message || "Failed to fetch events");
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to fetch events");
@@ -440,17 +458,31 @@ function EventTableContent() {
       setTotal(0);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
+
+  // Auto-refresh every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchEvents(true); // Show refresh indicator for auto-refresh
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [pagination.pageIndex, pagination.pageSize, filters]);
 
   useEffect(() => {
     fetchEvents();
   }, [pagination.pageIndex, pagination.pageSize, filters]);
 
-  const handleFilterChange = (newFilters: GetUnlabeledEventsOptions) => {
+  const handleFilterChange = (newFilters: GetEventsOptions) => {
     setFilters(newFilters);
     updateURLParams(newFilters);
     setPagination((prev) => ({ ...prev, pageIndex: 0 })); // Reset to first page
+  };
+
+  const handleManualRefresh = () => {
+    fetchEvents(true);
   };
 
   const table = useReactTable({
@@ -469,52 +501,36 @@ function EventTableContent() {
     paginationItemsToDisplay: 10,
   });
 
-  const selectedRowsCount = table.getFilteredSelectedRowModel().rows.length;
-  console.log(table.getState().rowSelection);
-
-  useEffect(() => {
-    const selected = table
-      .getFilteredSelectedRowModel()
-      .rows.map((row) => row.original.id);
-    setSelectedEventIds(selected);
-  }, [table.getFilteredSelectedRowModel().rows]);
-
   return (
     <div className="space-y-4 relative">
-      {/* Selection Bar */}
-      {selectedRowsCount > 0 && (
-        <div className="w-full fixed bottom-0 z-50 left-0 right-0 max-w-4xl mx-auto bg-muted shadow-lg border border-primary rounded-lg px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="font-medium">{selectedRowsCount} selected</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <LabelEventsDialog
-              selectedEventIds={selectedEventIds}
-              onSuccess={() => {
-                table.toggleAllPageRowsSelected(false);
-                fetchEvents();
-              }}
-            />
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.toggleAllPageRowsSelected(false)}
-            >
-              Clear
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Filters Status */}
+      {/* Status and Refresh */}
       <div className="flex items-center justify-between gap-3 max-sm:flex-col">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Total Events: {total}
-          </span>
-          {loading && <Badge variant="secondary">Loading...</Badge>}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Total Events: {total}
+            </span>
+            {(loading || isRefreshing) && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <RefreshCw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+                {loading ? "Loading..." : "Refreshing..."}
+              </Badge>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Last updated: {lastRefresh.toLocaleTimeString()}
+          </div>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleManualRefresh}
+          disabled={loading || isRefreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+          Refresh
+        </Button>
       </div>
 
       {/* Pagination */}
@@ -531,7 +547,7 @@ function EventTableContent() {
         </p>
         <div className="flex items-center flex-wrap divide-x-2">
           <div className="">
-            <EventFilters
+            <DeviceEventFilters
               onFilterChange={handleFilterChange}
               userRole={userRole}
               initialFilters={filters}
@@ -648,10 +664,7 @@ function EventTableContent() {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -680,7 +693,7 @@ function EventTableContent() {
 }
 
 // Loading component
-function EventTableSkeleton() {
+function DeviceEventTableSkeleton() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -698,10 +711,10 @@ function EventTableSkeleton() {
 }
 
 // Main component with Suspense boundary
-export default function EventTable() {
+export default function DeviceEventTable() {
   return (
-    <Suspense fallback={<EventTableSkeleton />}>
-      <EventTableContent />
+    <Suspense fallback={<DeviceEventTableSkeleton />}>
+      <DeviceEventTableContent />
     </Suspense>
   );
 }

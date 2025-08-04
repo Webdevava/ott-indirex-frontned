@@ -34,6 +34,7 @@ export type CreateUser = z.infer<typeof CreateUserSchema>;
 
 // Define UpdateUser type
 export type UpdateUser = {
+  role: string;
   name?: string;
   email?: string;
   password?: string;
@@ -120,19 +121,22 @@ export class AuthService {
     }
   }
 
-  static async getAllUsers(params: {
-    page?: number;
-    limit?: number;
-    role?: string;
-    search?: string;
-  } = {}): Promise<UsersListResponse> {
-    try {
-      const response = await api.get('/auth/users', { params });
-      return response.data as UsersListResponse;
-    } catch (error: any) {
-      throw new Error(`Failed to fetch users: ${error.message}`);
+static async getAllUsers(params: {
+  page?: number;
+  limit?: number;
+  role?: string;
+  search?: string;
+} = {}): Promise<UsersListResponse> {
+  try {
+    const response = await api.get('/auth/users', { params });
+    if (!response.data) {
+      throw new Error('No data returned from the server');
     }
+    return response.data as UsersListResponse;
+  } catch (error: any) {
+    throw new Error(`Failed to fetch users: ${error.message}`);
   }
+}
 
   static async getUserById(id: number): Promise<UserResponse> {
     try {

@@ -45,7 +45,7 @@ export type DeleteDeviceResponse = ApiResponse<never>;
 export class DeviceService {
   static async registerDevice(data: CreateDevice): Promise<DeviceResponse> {
     try {
-      const response = await api.post('/device/register', data);
+      const response = await api.post('/devices/register', data);
       return response.data as DeviceResponse;
     } catch (error: any) {
       throw new Error(`Device registration failed: ${error.message}`);
@@ -58,7 +58,7 @@ export class DeviceService {
     isActive?: boolean;
   } = {}): Promise<DevicesListResponse> {
     try {
-      const response = await api.get('/device/', { params });
+      const response = await api.get('/devices/', { params });
       return response.data as DevicesListResponse;
     } catch (error: any) {
       throw new Error(`Failed to fetch devices: ${error.message}`);
@@ -67,7 +67,7 @@ export class DeviceService {
 
   static async getDeviceById(device_id: string): Promise<DeviceResponse> {
     try {
-      const response = await api.get(`/device/${device_id}`);
+      const response = await api.get(`/devices/${device_id}`);
       return response.data as DeviceResponse;
     } catch (error: any) {
       throw new Error(`Failed to fetch device: ${error.message}`);
@@ -76,7 +76,7 @@ export class DeviceService {
 
   static async updateDevice(device_id: string, data: UpdateDevice): Promise<DeviceResponse> {
     try {
-      const response = await api.put(`/device/${device_id}`, data);
+      const response = await api.put(`/devices/${device_id}`, data);
       return response.data as DeviceResponse;
     } catch (error: any) {
       throw new Error(`Device update failed: ${error.message}`);
@@ -85,7 +85,7 @@ export class DeviceService {
 
   static async deleteDevice(device_id: string): Promise<DeleteDeviceResponse> {
     try {
-      const response = await api.delete(`/device/${device_id}`);
+      const response = await api.delete(`/devices/${device_id}`);
       return response.data as DeleteDeviceResponse;
     } catch (error: any) {
       throw new Error(`Device deletion failed: ${error.message}`);
