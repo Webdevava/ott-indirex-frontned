@@ -1,5 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
 import { LoginForm } from "@/components/forms/login-form"
-import { GalleryVerticalEnd } from "lucide-react"
 
 
 export default function LoginPage() {
@@ -8,9 +8,9 @@ export default function LoginPage() {
       <div className="flex w-full max-w-sm flex-col gap-6">
         <a href="#" className="flex items-center gap-2 self-center font-medium">
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <GalleryVerticalEnd className="size-4" />
+             <img src='/rex.svg' alt="logo" className="w-full h-8"/>
           </div>
-          Indivisual
+          Indirex
         </a>
         <LoginForm />
       </div>
