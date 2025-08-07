@@ -3,7 +3,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState, Suspense, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from "react";
+import {
+  useEffect,
+  useState,
+  Suspense,
+  JSXElementConstructor,
+  Key,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ColumnDef,
@@ -53,13 +62,13 @@ const columns: ColumnDef<Event>[] = [
     header: "Event ID",
     accessorKey: "id",
     cell: ({ row }) => <div className="font-medium">{row.getValue("id")}</div>,
-    size: 120,
+    size: 100,
     enableSorting: false,
   },
   {
     header: "Device ID",
     accessorKey: "device_id",
-    size: 140,
+    size: 100,
     enableSorting: false,
   },
   {
@@ -67,11 +76,12 @@ const columns: ColumnDef<Event>[] = [
     accessorKey: "type",
     cell: ({ row }) => {
       const type = row.getValue("type") as number;
-      const label = type === 29 ? "Recognized" : type === 33 ? "Unrecognized" : "Unknown";
+      const label =
+        type === 29 ? "Recognized" : type === 33 ? "Unrecognized" : "Unknown";
 
-      return <Badge variant="outline">{label}</Badge>;
+      return <p className="text-left">{label}</p>;
     },
-    size: 120,
+    size: 100,
     enableSorting: false,
   },
   {
@@ -84,7 +94,9 @@ const columns: ColumnDef<Event>[] = [
           <span
             className={cn(
               "font-medium",
-              score === null || score === 0 ? "text-muted-foreground" : "text-foreground"
+              score === null || score === 0
+                ? "text-muted-foreground"
+                : "text-foreground"
             )}
           >
             {score !== null ? score.toFixed(2) : "N/A"}
@@ -103,23 +115,52 @@ const columns: ColumnDef<Event>[] = [
       return (
         <div className="space-y-1">
           {channels.length > 0 ? (
-            channels.map((channel: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; score: number | null; }) => (
-              <div key={channel.id} className="text-sm">
-                <span className="font-medium">{channel.name}</span>
-                {channel.score !== null && (
-                  <span className="text-muted-foreground ml-2">
-                    ({channel.score.toFixed(2)})
-                  </span>
-                )}
-              </div>
-            ))
+            channels.map(
+              (channel: {
+                id: Key | null | undefined;
+                name:
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactElement<unknown, string | JSXElementConstructor<any>>
+                  | Iterable<ReactNode>
+                  | ReactPortal
+                  | Promise<
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | ReactPortal
+                      | ReactElement<
+                          unknown,
+                          string | JSXElementConstructor<any>
+                        >
+                      | Iterable<ReactNode>
+                      | null
+                      | undefined
+                    >
+                  | null
+                  | undefined;
+                score: number | null;
+              }) => (
+                <div key={channel.id} className="text-sm">
+                  <span className="font-medium">{channel.name}</span>
+                  {channel.score !== null && (
+                    <span className="text-muted-foreground ml-2">
+                      ({channel.score.toFixed(2)})
+                    </span>
+                  )}
+                </div>
+              )
+            )
           ) : (
-            <span className="text-muted-foreground text-sm">No channels</span>
+            <span className="text-muted-foreground text-sm">-</span>
           )}
         </div>
       );
     },
-    size: 200,
+    size: 140,
     enableSorting: false,
   },
   {
@@ -130,22 +171,52 @@ const columns: ColumnDef<Event>[] = [
       return (
         <div className="space-y-1">
           {ads.length > 0 ? (
-            ads.map((ad: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; score: number | null; }) => (
-              <div key={ad.id} className="text-sm">
-                <span className="font-medium">{ad.name}</span>
-                {ad.score !== null && (
-                  <span className="text-muted-foreground ml-2">
-                    ({ad.score.toFixed(2)})
-                  </span>
-                )}
-              </div>
-            ))
+            ads.map(
+              (ad: {
+                id: Key | null | undefined;
+                name:
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactElement<unknown, string | JSXElementConstructor<any>>
+                  | Iterable<ReactNode>
+                  | ReactPortal
+                  | Promise<
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | ReactPortal
+                      | ReactElement<
+                          unknown,
+                          string | JSXElementConstructor<any>
+                        >
+                      | Iterable<ReactNode>
+                      | null
+                      | undefined
+                    >
+                  | null
+                  | undefined;
+                score: number | null;
+              }) => (
+                <div key={ad.id} className="text-sm">
+                  <span className="font-medium">{ad.name}</span>
+                  {ad.score !== null && (
+                    <span className="text-muted-foreground ml-2">
+                      ({ad.score.toFixed(2)})
+                    </span>
+                  )}
+                </div>
+              )
+            )
           ) : (
-            <span className="text-muted-foreground text-sm">No ads</span>
+            <span className="text-muted-foreground text-sm">-</span>
           )}
         </div>
       );
     },
+    size: 140,
     enableSorting: false,
   },
   {
@@ -156,22 +227,52 @@ const columns: ColumnDef<Event>[] = [
       return (
         <div className="space-y-1">
           {content.length > 0 ? (
-            content.map((item: { id: Key | null | undefined; name: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; score: number | null; }) => (
-              <div key={item.id} className="text-sm">
-                <span className="font-medium">{item.name}</span>
-                {item.score !== null && (
-                  <span className="text-muted-foreground ml-2">
-                    ({item.score.toFixed(2)})
-                  </span>
-                )}
-              </div>
-            ))
+            content.map(
+              (item: {
+                id: Key | null | undefined;
+                name:
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactElement<unknown, string | JSXElementConstructor<any>>
+                  | Iterable<ReactNode>
+                  | ReactPortal
+                  | Promise<
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | ReactPortal
+                      | ReactElement<
+                          unknown,
+                          string | JSXElementConstructor<any>
+                        >
+                      | Iterable<ReactNode>
+                      | null
+                      | undefined
+                    >
+                  | null
+                  | undefined;
+                score: number | null;
+              }) => (
+                <div key={item.id} className="text-sm">
+                  <span className="font-medium">{item.name}</span>
+                  {item.score !== null && (
+                    <span className="text-muted-foreground ml-2">
+                      ({item.score.toFixed(2)})
+                    </span>
+                  )}
+                </div>
+              )
+            )
           ) : (
-            <span className="text-muted-foreground text-sm">No content</span>
+            <span className="text-muted-foreground text-sm">-</span>
           )}
         </div>
       );
     },
+    size: 140,
     enableSorting: false,
   },
   // {
@@ -220,7 +321,7 @@ const columns: ColumnDef<Event>[] = [
         timeZone: "Asia/Kathmandu",
       });
 
-      return <div className="text-sm">{humanReadable} NPT</div>;
+      return <div className="text-sm truncate">{humanReadable} NPT</div>;
     },
     size: 160,
     enableSorting: false,
@@ -247,7 +348,8 @@ const columns: ColumnDef<Event>[] = [
                 (e.target as HTMLImageElement).style.display = "none";
                 const parent = (e.target as HTMLImageElement).parentElement;
                 if (parent) {
-                  parent.innerHTML = '<span class="text-muted-foreground text-sm">Image error</span>';
+                  parent.innerHTML =
+                    '<span class="text-muted-foreground text-sm">Image error</span>';
                 }
               }}
             />
@@ -261,7 +363,8 @@ const columns: ColumnDef<Event>[] = [
                 (e.target as HTMLImageElement).style.display = "none";
                 const parent = (e.target as HTMLImageElement).parentElement;
                 if (parent) {
-                  parent.innerHTML = '<div class="text-center text-muted-foreground">Failed to load image</div>';
+                  parent.innerHTML =
+                    '<div class="text-center text-muted-foreground">Failed to load image</div>';
                 }
               }}
             />
@@ -432,7 +535,7 @@ function DeviceEventTableContent() {
     } else {
       setLoading(true);
     }
-    
+
     try {
       const response = await EventService.getEvents({
         page: pagination.pageIndex + 1,
@@ -512,7 +615,9 @@ function DeviceEventTableContent() {
             </span>
             {(loading || isRefreshing) && (
               <Badge variant="secondary" className="flex items-center gap-1">
-                <RefreshCw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+                <RefreshCw
+                  className={cn("h-3 w-3", isRefreshing && "animate-spin")}
+                />
                 {loading ? "Loading..." : "Refreshing..."}
               </Badge>
             )}
@@ -528,7 +633,9 @@ function DeviceEventTableContent() {
           disabled={loading || isRefreshing}
           className="flex items-center gap-2"
         >
-          <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+          <RefreshCw
+            className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+          />
           Refresh
         </Button>
       </div>

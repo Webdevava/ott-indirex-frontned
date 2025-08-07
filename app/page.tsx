@@ -10,7 +10,8 @@ const Page = () => {
   }, [router]);
 
   return (
-    <div>page</div>
+    <div className='h-screen flex items-center justify-center'><p>
+      redirecting...</p></div>
   );
 };
 

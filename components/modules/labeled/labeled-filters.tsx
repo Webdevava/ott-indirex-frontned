@@ -16,53 +16,83 @@ import {
 } from "@/components/ui/form";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GetUnlabeledEventsOptions } from "@/services/labels.service";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  GetUnlabeledEventsOptions,
+  GetLabelsOptions,
+} from "@/services/labels.service";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
+import { AuthService, User } from "@/services/auth.service";
 
-const filterSchema = z.object({
-  deviceId: z.string().optional(),
-  sort: z.enum(["asc", "desc"]).optional(),
-  date: z.date(),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().min(1, "End time is required"),
-}).refine(
-  (data) => {
-    if (data.startTime && data.endTime) {
-      const start = new Date(`1970-01-01T${data.startTime}:00`);
-      const end = new Date(`1970-01-01T${data.endTime}:00`);
-      return start < end;
+const filterSchema = z
+  .object({
+    deviceId: z.string().optional(),
+    sort: z.enum(["asc", "desc"]).optional(),
+    date: z.date(),
+    startTime: z.string().min(1, "Start time is required"),
+    endTime: z.string().min(1, "End time is required"),
+    createdBy: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.startTime && data.endTime) {
+        const start = new Date(`1970-01-01T${data.startTime}:00`);
+        const end = new Date(`1970-01-01T${data.endTime}:00`);
+        return start < end;
+      }
+      return true;
+    },
+    {
+      message: "Start time must be before end time",
+      path: ["endTime"],
     }
-    return true;
-  },
-  {
-    message: "Start time must be before end time",
-    path: ["endTime"],
-  }
-);
+  )
+  .refine(
+    (data) => {
+      // Ensure only one of deviceId or createdBy is set
+      if (data.deviceId && data.createdBy !== "all") {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Cannot use both Device ID and Created By filters",
+      path: ["createdBy"],
+    }
+  );
 
 type FilterFormValues = z.infer<typeof filterSchema>;
 
 interface EventFiltersProps {
-  onFilterChange: (filters: GetUnlabeledEventsOptions) => void;
+  onFilterChange: (filters: GetLabelsOptions) => void;
   userRole?: string | null;
-  initialFilters?: GetUnlabeledEventsOptions;
+  initialFilters?: GetLabelsOptions;
 }
 
 // Helper function to get URL parameters
 function getUrlParams() {
-  if (typeof window === 'undefined') return {};
-  
+  if (typeof window === "undefined") return {};
+
   const params = new URLSearchParams(window.location.search);
   const urlParams: { [key: string]: string } = {};
-  
+
   for (const [key, value] of params.entries()) {
     urlParams[key] = value;
   }
-  
+
   return urlParams;
 }
 
@@ -78,7 +108,7 @@ function formatTimeFromDate(date: Date): string {
 
 // Helper function to extract date from Date object
 function extractDate(date: Date | string): Date {
-  if (typeof date === 'string') {
+  if (typeof date === "string") {
     return new Date(date);
   }
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -86,7 +116,7 @@ function extractDate(date: Date | string): Date {
 
 // Helper function to extract time from Date object
 function extractTime(date: Date | string): string {
-  if (typeof date === 'string') {
+  if (typeof date === "string") {
     date = new Date(date);
   }
   return formatTimeFromDate(date as Date);
@@ -108,32 +138,55 @@ function isValidTimeFormat(timeStr: string): boolean {
   return timeRegex.test(timeStr);
 }
 
-export default function EventFilters({ 
-  onFilterChange, 
+export default function EventFilters({
+  onFilterChange,
   userRole,
-  initialFilters = {}
+  initialFilters = {},
 }: EventFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   // Get URL parameters
   const urlParams = getUrlParams();
 
-  // Get default values with URL priority
+  // Fetch users for createdBy filter (only for ADMIN)
+  useEffect(() => {
+    if (userRole === "ADMIN") {
+      const fetchUsers = async () => {
+        setIsLoadingUsers(true);
+        try {
+          const response = await AuthService.getAllUsers();
+          if (response.success && response.data) {
+            setUsers(response.data.users);
+          }
+        } catch (error) {
+          console.error("Failed to fetch users:", error);
+        } finally {
+          setIsLoadingUsers(false);
+        }
+      };
+      fetchUsers();
+    }
+  }, [userRole]);
+
+  // Get initial values with URL priority
   const getInitialValues = () => {
     const defaultDate = getDefaultDate();
     const defaultStartTime = "00:00";
     const defaultEndTime = "23:59";
-    const defaultSort = "asc"; // Default to ascending
+    const defaultSort = "desc";
+    const defaultCreatedBy = "all";
+    const defaultDeviceId = "";
 
-    // Priority 1: URL parameters
     let initialDate = defaultDate;
     let initialStartTime = defaultStartTime;
     let initialEndTime = defaultEndTime;
     let initialSort = defaultSort;
-    let initialDeviceId = "";
+    let initialDeviceId = defaultDeviceId;
+    let initialCreatedBy = defaultCreatedBy;
 
-    // Check URL for date
     if (urlParams.date) {
       const urlDate = parseDateFromUrl(urlParams.date);
       if (urlDate) {
@@ -141,32 +194,37 @@ export default function EventFilters({
       }
     }
 
-    // Check URL for start time
     if (urlParams.startTime && isValidTimeFormat(urlParams.startTime)) {
       initialStartTime = urlParams.startTime;
     }
 
-    // Check URL for end time
     if (urlParams.endTime && isValidTimeFormat(urlParams.endTime)) {
       initialEndTime = urlParams.endTime;
     }
 
-    // Check URL for sort
-    if (urlParams.sort && (urlParams.sort === "asc" || urlParams.sort === "desc")) {
+    if (
+      urlParams.sort &&
+      (urlParams.sort === "desc" || urlParams.sort === "asc")
+    ) {
       initialSort = urlParams.sort;
     }
 
-    // Check URL for device ID
+    // Only one of deviceId or createdBy can be set
     if (urlParams.deviceId) {
       initialDeviceId = urlParams.deviceId;
+      initialCreatedBy = "all"; // Reset createdBy
+    } else if (urlParams.createdBy) {
+      initialCreatedBy = urlParams.createdBy;
+      initialDeviceId = ""; // Reset deviceId
     }
 
     return {
       date: initialDate,
       startTime: initialStartTime,
       endTime: initialEndTime,
-      sort: initialSort as "asc" | "desc",
+      sort: initialSort as "desc" | "asc",
       deviceId: initialDeviceId,
+      createdBy: initialCreatedBy,
     };
   };
 
@@ -174,10 +232,11 @@ export default function EventFilters({
     resolver: zodResolver(filterSchema),
     defaultValues: {
       deviceId: "",
-      sort: "asc", // Default to ascending
+      sort: "desc",
       date: getDefaultDate(),
       startTime: "00:00",
       endTime: "23:59",
+      createdBy: "all",
     },
   });
 
@@ -186,60 +245,75 @@ export default function EventFilters({
     if (!isInitialized) {
       let formData: Partial<FilterFormValues> = {};
 
-      // Get initial values (URL has priority, but only read once on mount)
       const initialValues = getInitialValues();
 
-      // Priority 1: URL parameters
       formData = {
         date: initialValues.date,
         startTime: initialValues.startTime,
         endTime: initialValues.endTime,
         sort: initialValues.sort,
         deviceId: initialValues.deviceId,
+        createdBy: initialValues.createdBy,
       };
 
-      // Priority 2: Override with initial filters if provided and URL doesn't have them
       if (Object.keys(initialFilters).length > 0) {
-        // Set device ID for ADMIN only (ANNOTATOR deviceId is handled in service layer)
-        if (userRole === "ADMIN" && initialFilters.deviceId && !urlParams.deviceId) {
+        if (
+          userRole === "ADMIN" &&
+          initialFilters.deviceId &&
+          !urlParams.deviceId &&
+          !initialFilters.createdBy // Only set deviceId if createdBy is not set
+        ) {
           formData.deviceId = initialFilters.deviceId;
+          formData.createdBy = "all";
         }
 
-        // Set sort if not in URL
         if (initialFilters.sort && !urlParams.sort) {
           formData.sort = initialFilters.sort;
         }
 
-        // Set date and times from initial filters if not in URL
-        if (initialFilters.startDate && !urlParams.date && !urlParams.startTime) {
-          const startDate = typeof initialFilters.startDate === 'string' 
-            ? new Date(initialFilters.startDate) 
-            : initialFilters.startDate;
-          
+        if (
+          userRole === "ADMIN" &&
+          initialFilters.createdBy &&
+          !urlParams.createdBy &&
+          !initialFilters.deviceId // Only set createdBy if deviceId is not set
+        ) {
+          formData.createdBy = initialFilters.createdBy;
+          formData.deviceId = "";
+        }
+
+        if (
+          initialFilters.startDate &&
+          !urlParams.date &&
+          !urlParams.startTime
+        ) {
+          const startDate =
+            typeof initialFilters.startDate === "string"
+              ? new Date(initialFilters.startDate)
+              : initialFilters.startDate;
+
           formData.date = extractDate(startDate);
           formData.startTime = extractTime(startDate);
         }
 
         if (initialFilters.endDate && !urlParams.endTime) {
-          const endDate = typeof initialFilters.endDate === 'string' 
-            ? new Date(initialFilters.endDate) 
-            : initialFilters.endDate;
-          
+          const endDate =
+            typeof initialFilters.endDate === "string"
+              ? new Date(initialFilters.endDate)
+              : initialFilters.endDate;
+
           formData.endTime = extractTime(endDate);
         }
       }
 
-      // Reset form with the calculated values
       form.reset(formData);
       setIsInitialized(true);
 
-      // Apply filters immediately with the initial values
       const filters = buildFilters(formData as FilterFormValues);
       onFilterChange(filters);
     }
   }, [initialFilters, userRole, form, isInitialized, onFilterChange]);
 
-  const buildFilters = (data: FilterFormValues): GetUnlabeledEventsOptions => {
+  const buildFilters = (data: FilterFormValues): GetLabelsOptions => {
     const startDateTime = new Date(data.date);
     const [startHours, startMinutes] = data.startTime.split(":");
     startDateTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
@@ -253,6 +327,7 @@ export default function EventFilters({
       sort: data.sort,
       startDate: startDateTime,
       endDate: endDateTime,
+      createdBy: data.createdBy === "all" ? undefined : data.createdBy,
     };
   };
 
@@ -265,12 +340,13 @@ export default function EventFilters({
   const onClear = () => {
     const defaultData = {
       deviceId: "",
-      sort: "asc" as const, // Default to ascending
+      sort: "desc" as const,
       date: getDefaultDate(),
       startTime: "00:00",
       endTime: "23:59",
+      createdBy: "all",
     };
-    
+
     form.reset(defaultData);
     const filters = buildFilters(defaultData as FilterFormValues);
     onFilterChange(filters);
@@ -278,7 +354,8 @@ export default function EventFilters({
   };
 
   const isAdmin = userRole === "ADMIN";
-  const showDeviceIdField = isAdmin;
+  const deviceIdValue = form.watch("deviceId");
+  const createdByValue = form.watch("createdBy");
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -290,7 +367,7 @@ export default function EventFilters({
       <PopoverContent className="w-[400px] p-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {showDeviceIdField && (
+            {isAdmin && (
               <FormField
                 control={form.control}
                 name="deviceId"
@@ -302,6 +379,13 @@ export default function EventFilters({
                         {...field}
                         value={field.value ?? ""}
                         placeholder="Enter device ID"
+                        disabled={createdByValue !== "all"} // Disable if createdBy is set
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (e.target.value) {
+                            form.setValue("createdBy", "all"); // Clear createdBy when deviceId is set
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -309,7 +393,51 @@ export default function EventFilters({
                 )}
               />
             )}
-            
+
+            {isAdmin && (
+              <FormField
+                control={form.control}
+                name="createdBy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Created By</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value !== "all") {
+                          form.setValue("deviceId", ""); // Clear deviceId when createdBy is set
+                        }
+                      }}
+                      value={field.value ?? "all"}
+                      disabled={isLoadingUsers || !!deviceIdValue} // Disable if loading or deviceId is set
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder={
+                              isLoadingUsers ? "Loading users..." : "All"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        {users.map((user) => (
+                          <SelectItem
+                            key={user.id}
+                            value={user.email}
+                          >
+                            {user.name} ({user.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="sort"
@@ -323,7 +451,7 @@ export default function EventFilters({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                     <SelectItem value="asc">Oldest First</SelectItem>
+                      <SelectItem value="asc">Oldest First</SelectItem>
                       <SelectItem value="desc">Newest First</SelectItem>
                     </SelectContent>
                   </Select>
@@ -345,7 +473,7 @@ export default function EventFilters({
                           variant="outline"
                           className={cn(
                             "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"  
+                            !field.value && "text-muted-foreground"
                           )}
                         >
                           {field.value ? (
@@ -393,7 +521,7 @@ export default function EventFilters({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="endTime"

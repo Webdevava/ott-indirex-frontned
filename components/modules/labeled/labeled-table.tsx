@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Suspense } from "react";
@@ -20,13 +19,6 @@ import { usePagination } from "@/hooks/use-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Pagination,
   PaginationContent,
@@ -57,8 +49,8 @@ import {
   LabelProgram,
   GetLabelsOptions,
 } from "@/services/labels.service";
-import EventFilters from "../labeling/unlabeled-filters";
-// import EventFilters from "./event-filters";
+import EventFilters from "./labeled-filters";
+import { ViewLabelDialog } from "./view-label-dialog";
 
 // Loading component
 function EventTableSkeleton() {
@@ -136,7 +128,7 @@ const columns: ColumnDef<LabelWithDetails>[] = [
       switch (row.original.label_type) {
         case "song":
           return (
-            <div className="text-sm">
+            <div className="text-sm truncate">
               <span className="font-medium">
                 {(details as LabelSong).song_name}
               </span>
@@ -147,7 +139,7 @@ const columns: ColumnDef<LabelWithDetails>[] = [
           );
         case "ad":
           return (
-            <div className="text-sm">
+            <div className="text-sm truncate">
               <span className="font-medium">{(details as LabelAd).brand}</span>
               <span className="text-muted-foreground ml-2">
                 ({(details as LabelAd).type})
@@ -156,7 +148,7 @@ const columns: ColumnDef<LabelWithDetails>[] = [
           );
         case "error":
           return (
-            <div className="text-sm">
+            <div className="text-sm truncate">
               <span className="font-medium">
                 {(details as LabelError).error_type}
               </span>
@@ -181,56 +173,6 @@ const columns: ColumnDef<LabelWithDetails>[] = [
     size: 200,
     enableSorting: false,
   },
-  // {
-  //   header: "Event IDs",
-  //   accessorKey: "event_ids",
-  //   cell: ({ row }) => (
-  //     <div className="text-sm">
-  //       {(row.getValue("event_ids") as string[]).slice(0, 3).join(", ")}
-  //       {(row.getValue("event_ids") as string[]).length > 3 && "..."}
-  //     </div>
-  //   ),
-  //   size: 150,
-  //   enableSorting: false,
-  // },
-  // {
-  //   header: "Start Time",
-  //   accessorKey: "start_time",
-  //   cell: ({ row }) => {
-  //     const unixTimestamp = row.getValue("start_time") as number;
-  //     const date = new Date(unixTimestamp * 1000); // Convert to milliseconds
-  //     const humanReadable = date.toLocaleString("en-IN", {
-  //       timeZone: "UTC", // Use "Asia/Kathmandu" for Nepal time instead
-  //     });
-
-  //     return (
-  //       <div className="text-sm">
-  //         {humanReadable}
-  //       </div>
-  //     );
-  //   },
-  //   size: 150,
-  //   enableSorting: false,
-  // },
-  // {
-  //   header: "End Time",
-  //   accessorKey: "end_time",
-  //   cell: ({ row }) => {
-  //     const unixTimestamp = row.getValue("end_time") as number;
-  //     const date = new Date(unixTimestamp * 1000); // Convert to milliseconds
-  //     const humanReadable = date.toLocaleString("en-IN", {
-  //       timeZone: "UTC", // or "Asia/Kathmandu" for Nepal Time
-  //     });
-
-  //     return (
-  //       <div className="text-sm">
-  //         {humanReadable}
-  //       </div>
-  //     );
-  //   },
-  //   size: 150,
-  //   enableSorting: false,
-  // },
   {
     header: "Created By",
     accessorKey: "created_by",
@@ -262,107 +204,6 @@ const columns: ColumnDef<LabelWithDetails>[] = [
     enableSorting: false,
   },
 ];
-
-function ViewLabelDialog({ label }: { label: LabelWithDetails }) {
-  const [open, setOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  useEffect(() => {
-    if (open && label.image_paths?.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % label.image_paths.length);
-      }, 200); // Change image every 200ms for pseudo-GIF effect
-      return () => clearInterval(interval);
-    }
-  }, [open, label.image_paths]);
-
-function convertUnixToNPT(unixTimestamp: string | number = label.end_time) {
-  const timestampInSeconds = typeof unixTimestamp === "string" ? parseInt(unixTimestamp, 10) : unixTimestamp;
-  const date = new Date(timestampInSeconds * 1000);
-
-  return date.toLocaleString("en-IN", {
-    timeZone: "Asia/Kathmandu",
-  });
-}
-
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          View
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Label Details (ID: {label.id})</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          {label.image_paths?.length > 0 && (
-            <div className="relative border rounded-lg bg-muted">
-              <img
-                src={label.image_paths[currentImageIndex] ?? ""}
-                alt={`Label image ${currentImageIndex + 1}`}
-                className="w-full h-64 object-contain rounded-md"
-              />
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="font-medium">Label Type</p>
-              <p className="capitalize">{label.label_type}</p>
-            </div>
-            <div>
-              <p className="font-medium">Created By</p>
-              <p>{label.created_by}</p>
-            </div>
-            <div>
-              <p className="font-medium">Created At</p>
-              <p>{new Date(label.created_at).toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="font-medium">From</p>
-              <p>{convertUnixToNPT(label.start_time)}</p>
-            </div>
-            <div>
-              <p className="font-medium">To</p>
-              <p>{convertUnixToNPT(label.end_time)}</p>
-            </div>
-            <div>
-              <p className="font-medium">Event IDs</p>
-              <p>{label.event_ids.join(", ")}</p>
-            </div>
-            {label.notes && (
-              <div className="col-span-2">
-                <p className="font-medium">Notes</p>
-                <p>{label.notes}</p>
-              </div>
-            )}
-          </div>
-          {label.details && (
-            <div>
-              <p className="font-medium">Details</p>
-              <div className="text-sm space-y-1">
-                {Object.entries(label.details).map(
-                  ([key, value]) =>
-                    key !== "label_id" &&
-                    value && (
-                      <p key={key}>
-                        <span className="capitalize">
-                          {key.replace("_", " ")}:
-                        </span>{" "}
-                        {value}
-                      </p>
-                    )
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 // Helper function to get cookie value
 function getCookie(name: string): string | null {
@@ -412,6 +253,12 @@ function LabeledEventsTableContent() {
     const sortParam = searchParams.get("sort");
     if (sortParam === "asc" || sortParam === "desc") {
       urlFilters.sort = sortParam;
+    }
+
+    // Get createdBy param
+    const createdByParam = searchParams.get("createdBy");
+    if (createdByParam) {
+      urlFilters.createdBy = createdByParam;
     }
 
     // Get date and time params
@@ -479,6 +326,9 @@ function LabeledEventsTableContent() {
     }
     if (newFilters.sort) {
       params.set("sort", newFilters.sort);
+    }
+    if (newFilters.createdBy) {
+      params.set("createdBy", newFilters.createdBy); // Add createdBy to URL
     }
     if (newFilters.startDate) {
       const date =
