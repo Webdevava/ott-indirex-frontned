@@ -317,11 +317,9 @@ const columns: ColumnDef<Event>[] = [
       const timestamp = row.getValue("timestamp") as string;
       const unixTimestamp = parseInt(timestamp);
       const date = new Date(unixTimestamp * 1000);
-      const humanReadable = date.toLocaleString("en-IN", {
-        timeZone: "Asia/Kathmandu",
-      });
+      const humanReadable = date.toLocaleString("en-IN");
 
-      return <div className="text-sm truncate">{humanReadable} NPT</div>;
+      return <div className="text-sm truncate">{humanReadable}</div>;
     },
     size: 160,
     enableSorting: false,

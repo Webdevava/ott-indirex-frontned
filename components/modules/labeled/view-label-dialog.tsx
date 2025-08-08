@@ -38,7 +38,6 @@ export function ViewLabelDialog({ label }: ViewLabelDialogProps) {
     const timestampInSeconds = typeof unixTimestamp === "string" ? parseInt(unixTimestamp, 10) : unixTimestamp;
     const date = new Date(timestampInSeconds * 1000);
     return date.toLocaleString("en-IN", {
-      timeZone: "Asia/Kathmandu",
       dateStyle: "medium",
       timeStyle: "short",
     });

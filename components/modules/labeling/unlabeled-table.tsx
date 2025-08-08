@@ -207,11 +207,9 @@ const columns: ColumnDef<Event>[] = [
     cell: ({ row }) => {
       const unixTimestamp = row.getValue("timestamp") as number;
       const date = new Date(unixTimestamp * 1000);
-      const humanReadable = date.toLocaleString("en-IN", {
-        timeZone: "Asia/Kathmandu",
-      });
+      const humanReadable = date.toLocaleString("en-IN");
 
-      return <div className="text-sm">{humanReadable} NPT</div>;
+      return <div className="text-sm">{humanReadable}</div>;
     },
     size: 160,
     enableSorting: false,

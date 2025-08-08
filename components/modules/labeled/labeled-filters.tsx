@@ -17,7 +17,6 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  GetUnlabeledEventsOptions,
   GetLabelsOptions,
 } from "@/services/labels.service";
 import {
