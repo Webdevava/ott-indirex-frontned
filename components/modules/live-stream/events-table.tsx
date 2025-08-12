@@ -456,34 +456,31 @@ function DeviceEventTableContent() {
       }
     }
 
-    // Set default filters if no URL params
-    if (!startDateParam || !startTimeParam || !endTimeParam) {
-      const today = new Date();
-      const startOfDay = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        0,
-        0,
-        0,
-        0
-      );
-      const endOfDay = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        23,
-        59,
-        59,
-        999
-      );
-
-      if (!urlFilters.startDate) urlFilters.startDate = startOfDay;
-      if (!urlFilters.endDate) urlFilters.endDate = endOfDay;
+    // Get category
+    // In the table component useEffect
+    const categoryParam = searchParams.get("category");
+    if (
+      categoryParam &&
+      ["all", "ads", "channels", "content"].includes(categoryParam)
+    ) {
+      urlFilters.category = categoryParam as
+        | "all"
+        | "ads"
+        | "channels"
+        | "content";
     }
 
-    if (!urlFilters.sort) {
-      urlFilters.sort = "desc";
+    // Get eventType
+    const eventTypeParam = searchParams.get("eventType");
+    if (
+      eventTypeParam &&
+      ["all", "recognized", "unrecognized"].includes(eventTypeParam)
+    ) {
+      if (eventTypeParam === "recognized") {
+        urlFilters.types = [29];
+      } else if (eventTypeParam === "unrecognized") {
+        urlFilters.types = [33];
+      }
     }
 
     setFilters(urlFilters);
@@ -519,6 +516,17 @@ function DeviceEventTableContent() {
           ? newFilters.endDate
           : new Date(newFilters.endDate);
       params.set("endTime", formatTime(date));
+    }
+    if (newFilters.category && newFilters.category !== "all") {
+      params.set("category", newFilters.category);
+    }
+    if (newFilters.types) {
+      let eventType = "all";
+      if (newFilters.types[0] === 29) eventType = "recognized";
+      if (newFilters.types[0] === 33) eventType = "unrecognized";
+      if (eventType !== "all") {
+        params.set("eventType", eventType);
+      }
     }
 
     const newURL = params.toString()

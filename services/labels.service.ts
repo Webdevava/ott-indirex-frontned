@@ -47,11 +47,31 @@ export const LabelProgramSchema = z.object({
 
 export type LabelProgram = z.infer<typeof LabelProgramSchema>;
 
+// Define LabelMovie schema
+export const LabelMovieSchema = z.object({
+  label_id: z.number().optional(),
+  movie_name: z.string().min(1, 'Movie name is required'),
+  director: z.string().nullable(),
+  genre: z.string().nullable(),
+  language: z.string().nullable(),
+  release_year: z.number().int().positive().nullable(),
+});
+
+export type LabelMovie = z.infer<typeof LabelMovieSchema>;
+
+// Define LabelStatic schema
+export const LabelStaticSchema = z.object({
+  label_id: z.number().optional(),
+  static_type: z.enum(['STAND_BY', 'UI_NAVIGATION']),
+});
+
+export type LabelStatic = z.infer<typeof LabelStaticSchema>;
+
 // Define Label schema
 export const LabelSchema = z.object({
   id: z.number(),
   event_ids: z.array(z.string()),
-  label_type: z.enum(['song', 'ad', 'error', 'program']),
+  label_type: z.enum(['song', 'ad', 'error', 'program', 'movie', 'static']),
   created_by: z.string(),
   created_at: z.date(),
   start_time: z.string(),
@@ -62,6 +82,8 @@ export const LabelSchema = z.object({
   ad: LabelAdSchema.nullable(),
   error: LabelErrorSchema.nullable(),
   program: LabelProgramSchema.nullable(),
+  movie: LabelMovieSchema.nullable(),
+  static: LabelStaticSchema.nullable(),
 });
 
 export type Label = z.infer<typeof LabelSchema>;
@@ -69,22 +91,28 @@ export type Label = z.infer<typeof LabelSchema>;
 // Define CreateLabel schema
 export const CreateLabelSchema = z.object({
   event_ids: z.array(z.string()).min(1, 'At least one event ID is required'),
-  label_type: z.enum(['song', 'ad', 'error', 'program']),
+  label_type: z.enum(['song', 'ad', 'error', 'program', 'movie', 'static']),
   notes: z.string().nullable(),
   song: LabelSongSchema.optional(),
   ad: LabelAdSchema.optional(),
   error: LabelErrorSchema.optional(),
   program: LabelProgramSchema.optional(),
+  movie: LabelMovieSchema.optional(),
+  static: LabelStaticSchema.optional(),
 }).refine(
   (data) => {
     if (data.label_type === 'song' && !data.song) return false;
     if (data.label_type === 'ad' && !data.ad) return false;
     if (data.label_type === 'error' && !data.error) return false;
     if (data.label_type === 'program' && !data.program) return false;
-    if (data.label_type === 'song' && (data.ad || data.error || data.program)) return false;
-    if (data.label_type === 'ad' && (data.song || data.error || data.program)) return false;
-    if (data.label_type === 'error' && (data.song || data.ad || data.program)) return false;
-    if (data.label_type === 'program' && (data.song || data.ad || data.error)) return false;
+    if (data.label_type === 'movie' && !data.movie) return false;
+    if (data.label_type === 'static' && !data.static) return false;
+    if (data.label_type === 'song' && (data.ad || data.error || data.program || data.movie || data.static)) return false;
+    if (data.label_type === 'ad' && (data.song || data.error || data.program || data.movie || data.static)) return false;
+    if (data.label_type === 'error' && (data.song || data.ad || data.program || data.movie || data.static)) return false;
+    if (data.label_type === 'program' && (data.song || data.ad || data.error || data.movie || data.static)) return false;
+    if (data.label_type === 'movie' && (data.song || data.ad || data.error || data.program || data.static)) return false;
+    if (data.label_type === 'static' && (data.song || data.ad || data.error || data.program || data.movie)) return false;
     return true;
   },
   {
@@ -97,23 +125,29 @@ export type CreateLabel = z.infer<typeof CreateLabelSchema>;
 
 // Define UpdateLabel schema
 export const UpdateLabelSchema = z.object({
-  label_type: z.enum(['song', 'ad', 'error', 'program']).optional(),
+  label_type: z.enum(['song', 'ad', 'error', 'program', 'movie', 'static']).optional(),
   notes: z.string().nullable().optional(),
   event_ids: z.array(z.string()).optional(),
   song: LabelSongSchema.optional(),
   ad: LabelAdSchema.optional(),
   error: LabelErrorSchema.optional(),
   program: LabelProgramSchema.optional(),
+  movie: LabelMovieSchema.optional(),
+  static: LabelStaticSchema.optional(),
 }).refine(
   (data) => {
     if (data.label_type && data.label_type === 'song' && !data.song) return false;
     if (data.label_type && data.label_type === 'ad' && !data.ad) return false;
     if (data.label_type && data.label_type === 'error' && !data.error) return false;
     if (data.label_type && data.label_type === 'program' && !data.program) return false;
-    if (data.label_type && data.label_type === 'song' && (data.ad || data.error || data.program)) return false;
-    if (data.label_type && data.label_type === 'ad' && (data.song || data.error || data.program)) return false;
-    if (data.label_type && data.label_type === 'error' && (data.song || data.ad || data.program)) return false;
-    if (data.label_type && data.label_type === 'program' && (data.song || data.ad || data.error)) return false;
+    if (data.label_type && data.label_type === 'movie' && !data.movie) return false;
+    if (data.label_type && data.label_type === 'static' && !data.static) return false;
+    if (data.label_type && data.label_type === 'song' && (data.ad || data.error || data.program || data.movie || data.static)) return false;
+    if (data.label_type && data.label_type === 'ad' && (data.song || data.error || data.program || data.movie || data.static)) return false;
+    if (data.label_type && data.label_type === 'error' && (data.song || data.ad || data.program || data.movie || data.static)) return false;
+    if (data.label_type && data.label_type === 'program' && (data.song || data.ad || data.error || data.movie || data.static)) return false;
+    if (data.label_type && data.label_type === 'movie' && (data.song || data.ad || data.error || data.program || data.static)) return false;
+    if (data.label_type && data.label_type === 'static' && (data.song || data.ad || data.error || data.program || data.movie)) return false;
     return true;
   },
   {
@@ -153,7 +187,7 @@ export type LabelResponse = ApiResponse<{
 }>;
 
 export type LabelsListResponse = ApiResponse<{
-  events?: any[]; // Using any[] for unlabeled events as per backend
+  events?: any[];
   labels?: Label[];
   total: number;
   totalPages: number;
@@ -168,9 +202,6 @@ function getCookie(name: string): string | null {
   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
   return null;
 }
-
-// Helper function to format date without timezone conversion
-// labels.service.ts
 
 // Helper function to format date in local timezone
 function formatDateForAPI(date: Date): string {
