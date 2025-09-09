@@ -310,7 +310,7 @@ const columns: ColumnDef<Event>[] = [
   //   size: 160,
   //   enableSorting: false,
   // },
-  {
+{
     header: "TimeStamp",
     accessorKey: "timestamp",
     cell: ({ row }) => {
@@ -321,11 +321,11 @@ const columns: ColumnDef<Event>[] = [
         timeZone: "Asia/Kathmandu",
       });
 
-      return <div className="text-sm truncate">{humanReadable} NPT</div>;
+      return <div className="text-sm truncate">{humanReadable}</div>;
     },
     size: 160,
     enableSorting: false,
-  },
+},
   {
     header: "Image",
     accessorKey: "image_path",
