@@ -72,6 +72,7 @@ const columns: ColumnDef<Event>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
+      className="border-primary"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -82,6 +83,7 @@ const columns: ColumnDef<Event>[] = [
     ),
     cell: ({ row }) => (
       <Checkbox
+      className="border-primary"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
@@ -207,9 +209,11 @@ const columns: ColumnDef<Event>[] = [
     cell: ({ row }) => {
       const unixTimestamp = row.getValue("timestamp") as number;
       const date = new Date(unixTimestamp * 1000);
-      const humanReadable = date.toLocaleString("en-IN");
+      const humanReadable = date.toLocaleString("en-IN", {
+        timeZone: "Asia/Kathmandu",
+      });
 
-      return <div className="text-sm">{humanReadable}</div>;
+      return <div className="text-sm">{humanReadable} NPT</div>;
     },
     size: 160,
     enableSorting: false,

@@ -87,7 +87,6 @@ export interface GetEventsOptions {
   deviceId?: string;
   types?: number[];
   sort?: 'asc' | 'desc';
-  category?: 'all' | 'ads' | 'channels' | 'content';
 }
 
 // Define GetEventsResult type
@@ -114,7 +113,6 @@ export class EventService {
         startDate: options.startDate instanceof Date ? options.startDate.toISOString() : options.startDate,
         endDate: options.endDate instanceof Date ? options.endDate.toISOString() : options.endDate,
         types: options.types?.join(','),
-        category: options.category !== 'all' ? options.category : undefined,
       };
       const response = await api.get('/events/', { params });
       return response.data as EventsListResponse;
