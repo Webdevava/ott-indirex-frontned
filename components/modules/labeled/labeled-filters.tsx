@@ -17,7 +17,6 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  GetUnlabeledEventsOptions,
   GetLabelsOptions,
 } from "@/services/labels.service";
 import {
@@ -45,7 +44,6 @@ const filterSchema = z
     startTime: z.string().min(1, "Start time is required"),
     endTime: z.string().min(1, "End time is required"),
     createdBy: z.string().optional(),
-    labelType: z.enum(["all", "song", "ad", "error", "program", "movie"]).optional(),
   })
   .refine(
     (data) => {
@@ -139,11 +137,6 @@ function isValidTimeFormat(timeStr: string): boolean {
   return timeRegex.test(timeStr);
 }
 
-// Helper function to validate labelType from URL parameter
-function isValidLabelType(type: string): type is "all" | "song" | "ad" | "error" | "program" | "movie" {
-  return ["all", "song", "ad", "error", "program", "movie"].includes(type);
-}
-
 export default function EventFilters({
   onFilterChange,
   userRole,
@@ -185,7 +178,6 @@ export default function EventFilters({
     const defaultSort = "desc";
     const defaultCreatedBy = "all";
     const defaultDeviceId = "";
-    const defaultLabelType = "all";
 
     let initialDate = defaultDate;
     let initialStartTime = defaultStartTime;
@@ -193,7 +185,6 @@ export default function EventFilters({
     let initialSort = defaultSort;
     let initialDeviceId = defaultDeviceId;
     let initialCreatedBy = defaultCreatedBy;
-    let initialLabelType: "all" | "song" | "ad" | "error" | "program" | "movie" = defaultLabelType;
 
     if (urlParams.date) {
       const urlDate = parseDateFromUrl(urlParams.date);
@@ -217,10 +208,6 @@ export default function EventFilters({
       initialSort = urlParams.sort;
     }
 
-    if (urlParams.labelType && isValidLabelType(urlParams.labelType)) {
-      initialLabelType = urlParams.labelType;
-    }
-
     // Only one of deviceId or createdBy can be set
     if (urlParams.deviceId) {
       initialDeviceId = urlParams.deviceId;
@@ -237,7 +224,6 @@ export default function EventFilters({
       sort: initialSort as "desc" | "asc",
       deviceId: initialDeviceId,
       createdBy: initialCreatedBy,
-      labelType: initialLabelType,
     };
   };
 
@@ -250,23 +236,23 @@ export default function EventFilters({
       startTime: "00:00",
       endTime: "23:59",
       createdBy: "all",
-      labelType: "all",
     },
   });
 
   // Initialize form with URL parameters, initial filters, or defaults
   useEffect(() => {
     if (!isInitialized) {
+      let formData: Partial<FilterFormValues> = {};
+
       const initialValues = getInitialValues();
 
-      const formData: Partial<FilterFormValues> = {
+      formData = {
         date: initialValues.date,
         startTime: initialValues.startTime,
         endTime: initialValues.endTime,
         sort: initialValues.sort,
         deviceId: initialValues.deviceId,
         createdBy: initialValues.createdBy,
-        labelType: initialValues.labelType,
       };
 
       if (Object.keys(initialFilters).length > 0) {
@@ -292,14 +278,6 @@ export default function EventFilters({
         ) {
           formData.createdBy = initialFilters.createdBy;
           formData.deviceId = "";
-        }
-
-        if (
-          initialFilters.labelType &&
-          !urlParams.labelType &&
-          isValidLabelType(initialFilters.labelType)
-        ) {
-          formData.labelType = initialFilters.labelType;
         }
 
         if (
@@ -349,29 +327,27 @@ export default function EventFilters({
       startDate: startDateTime,
       endDate: endDateTime,
       createdBy: data.createdBy === "all" ? undefined : data.createdBy,
-      labelType: data.labelType === "all" ? undefined : data.labelType,
     };
-  };
-
-  const onClear = () => {
-    const defaultData: FilterFormValues = {
-      deviceId: "",
-      sort: "desc",
-      date: getDefaultDate(),
-      startTime: "00:00",
-      endTime: "23:59",
-      createdBy: "all",
-      labelType: "all",
-    };
-
-    form.reset(defaultData);
-    const filters = buildFilters(defaultData);
-    onFilterChange(filters);
-    setIsOpen(false);
   };
 
   const onSubmit = (data: FilterFormValues) => {
     const filters = buildFilters(data);
+    onFilterChange(filters);
+    setIsOpen(false);
+  };
+
+  const onClear = () => {
+    const defaultData = {
+      deviceId: "",
+      sort: "desc" as const,
+      date: getDefaultDate(),
+      startTime: "00:00",
+      endTime: "23:59",
+      createdBy: "all",
+    };
+
+    form.reset(defaultData);
+    const filters = buildFilters(defaultData as FilterFormValues);
     onFilterChange(filters);
     setIsOpen(false);
   };
@@ -446,7 +422,10 @@ export default function EventFilters({
                       <SelectContent>
                         <SelectItem value="all">All</SelectItem>
                         {users.map((user) => (
-                          <SelectItem key={user.id} value={user.email}>
+                          <SelectItem
+                            key={user.id}
+                            value={user.email}
+                          >
                             {user.name} ({user.email})
                           </SelectItem>
                         ))}
@@ -457,35 +436,6 @@ export default function EventFilters({
                 )}
               />
             )}
-
-            <FormField
-              control={form.control}
-              name="labelType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Label Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? "all"}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select label type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="song">Song</SelectItem>
-                      <SelectItem value="ad">Ad</SelectItem>
-                      <SelectItem value="error">Error</SelectItem>
-                      <SelectItem value="program">Program</SelectItem>
-                      <SelectItem value="movie">Movie</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control}

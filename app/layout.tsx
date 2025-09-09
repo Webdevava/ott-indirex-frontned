@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Indirex | India OTT Internal Tool",
+  title: "Indirex | Nepal Internal Tool",
   description: "Linear TV Data Labeling and Management Tool",
 };
 

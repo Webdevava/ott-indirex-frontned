@@ -26,12 +26,17 @@ import { Calendar } from "@/components/ui/calendar";
 const filterSchema = z.object({
   deviceId: z.string().optional(),
   sort: z.enum(["asc", "desc"]).optional(),
-  date: z.date(),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().min(1, "End time is required"),
+  date: z.date().optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  category: z.enum(["all", "ads", "channels", "content"]),
+  eventType: z.enum(["all", "recognized", "unrecognized"]),
 }).refine(
   (data) => {
-    if (data.startTime && data.endTime) {
+    if (data.date) {
+      if (!data.startTime || !data.endTime) {
+        return false;
+      }
       const start = new Date(`1970-01-01T${data.startTime}:00`);
       const end = new Date(`1970-01-01T${data.endTime}:00`);
       return start < end;
@@ -39,7 +44,7 @@ const filterSchema = z.object({
     return true;
   },
   {
-    message: "Start time must be before end time",
+    message: "Start time must be before end time and both are required when date is selected",
     path: ["endTime"],
   }
 );
@@ -121,26 +126,31 @@ export default function DeviceEventFilters({
 
   // Get default values with URL priority
   const getInitialValues = () => {
-    const defaultDate = getDefaultDate();
-    const defaultStartTime = "00:00";
-    const defaultEndTime = "23:59";
     const defaultSort = "desc"; // Default to descending for live events
+    const defaultCategory = "all";
+    const defaultEventType = "all";
 
     // Priority 1: URL parameters
-    const initialDate = defaultDate;
-    const initialStartTime = defaultStartTime;
-    const initialEndTime = defaultEndTime;
-    let initialSort = defaultSort;
-    let initialDeviceId = "";
+    let initialDate: Date | undefined = undefined;
+    let initialStartTime = "";
+    let initialEndTime = "";
+// In device-event-filters.tsx
+const initialSort = urlParams.sort && (urlParams.sort === "asc" || urlParams.sort === "desc") ? urlParams.sort : defaultSort;
+const initialDeviceId = urlParams.deviceId || "";
+const initialCategory = urlParams.category && ['all', 'ads', 'channels', 'content'].includes(urlParams.category) ? urlParams.category : defaultCategory;
+const initialEventType = urlParams.eventType && ['all', 'recognized', 'unrecognized'].includes(urlParams.eventType) ? urlParams.eventType : defaultEventType;
 
-    // Check URL for sort
-    if (urlParams.sort && (urlParams.sort === "asc" || urlParams.sort === "desc")) {
-      initialSort = urlParams.sort;
-    }
+    const startDateParam = urlParams.startDate;
+    const startTimeParam = urlParams.startTime;
+    const endTimeParam = urlParams.endTime;
 
-    // Check URL for device ID
-    if (urlParams.deviceId) {
-      initialDeviceId = urlParams.deviceId;
+    if (startDateParam && startTimeParam && endTimeParam && isValidTimeFormat(startTimeParam) && isValidTimeFormat(endTimeParam)) {
+      const date = parseDateFromUrl(startDateParam);
+      if (date) {
+        initialDate = date;
+        initialStartTime = startTimeParam;
+        initialEndTime = endTimeParam;
+      }
     }
 
     return {
@@ -149,6 +159,8 @@ export default function DeviceEventFilters({
       endTime: initialEndTime,
       sort: initialSort as "asc" | "desc",
       deviceId: initialDeviceId,
+      category: initialCategory as "all" | "ads" | "channels" | "content",
+      eventType: initialEventType as "all" | "recognized" | "unrecognized",
     };
   };
 
@@ -156,10 +168,12 @@ export default function DeviceEventFilters({
     resolver: zodResolver(filterSchema),
     defaultValues: {
       deviceId: "",
-      sort: "desc", // Default to descending for live events
-      date: getDefaultDate(),
-      startTime: "00:00",
-      endTime: "23:59",
+      sort: "desc",
+      date: undefined,
+      startTime: "",
+      endTime: "",
+      category: "all",
+      eventType: "all",
     },
   });
 
@@ -171,29 +185,25 @@ export default function DeviceEventFilters({
       // Get initial values (URL has priority, but only read once on mount)
       const initialValues = getInitialValues();
 
-      // Priority 1: URL parameters
-      formData = {
-        date: initialValues.date,
-        startTime: initialValues.startTime,
-        endTime: initialValues.endTime,
-        sort: initialValues.sort,
-        deviceId: initialValues.deviceId,
-      };
+      // Set from initial values
+      formData = { ...initialValues };
 
-      // Priority 2: Override with initial filters if provided and URL doesn't have them
+      // Override with initialFilters if not in URL
       if (Object.keys(initialFilters).length > 0) {
-        // Set device ID if not in URL
         if (initialFilters.deviceId && !urlParams.deviceId) {
           formData.deviceId = initialFilters.deviceId;
         }
-
-        // Set sort if not in URL
         if (initialFilters.sort && !urlParams.sort) {
           formData.sort = initialFilters.sort;
         }
-
-        // Set date and times from initial filters if not in URL
-        if (initialFilters.startDate && !urlParams.date && !urlParams.startTime) {
+        if (initialFilters.category && !urlParams.category) {
+          formData.category = initialFilters.category as "all" | "ads" | "channels" | "content";
+        }
+        if (initialFilters.types && !urlParams.eventType) {
+          if (initialFilters.types[0] === 29) formData.eventType = "recognized";
+          if (initialFilters.types[0] === 33) formData.eventType = "unrecognized";
+        }
+        if (initialFilters.startDate && !urlParams.startDate) {
           const startDate = typeof initialFilters.startDate === 'string' 
             ? new Date(initialFilters.startDate) 
             : initialFilters.startDate;
@@ -201,7 +211,6 @@ export default function DeviceEventFilters({
           formData.date = extractDate(startDate);
           formData.startTime = extractTime(startDate);
         }
-
         if (initialFilters.endDate && !urlParams.endTime) {
           const endDate = typeof initialFilters.endDate === 'string' 
             ? new Date(initialFilters.endDate) 
@@ -222,20 +231,33 @@ export default function DeviceEventFilters({
   }, [initialFilters, userRole, form, isInitialized, onFilterChange]);
 
   const buildFilters = (data: FilterFormValues): GetEventsOptions => {
-    const startDateTime = new Date(data.date);
-    const [startHours, startMinutes] = data.startTime.split(":");
-    startDateTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
-
-    const endDateTime = new Date(data.date);
-    const [endHours, endMinutes] = data.endTime.split(":");
-    endDateTime.setHours(parseInt(endHours), parseInt(endMinutes), 59, 999);
-
-    return {
+    const filters: GetEventsOptions = {
       deviceId: data.deviceId || undefined,
       sort: data.sort,
-      startDate: startDateTime,
-      endDate: endDateTime,
     };
+
+    if (data.date && data.startTime && data.endTime) {
+      const startDateTime = new Date(data.date);
+      const [startHours, startMinutes] = data.startTime.split(":");
+      startDateTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+
+      const endDateTime = new Date(data.date);
+      const [endHours, endMinutes] = data.endTime.split(":");
+      endDateTime.setHours(parseInt(endHours), parseInt(endMinutes), 59, 999);
+
+      filters.startDate = startDateTime;
+      filters.endDate = endDateTime;
+    }
+
+    if (data.category !== 'all') {
+      filters.category = data.category;
+    }
+
+    if (data.eventType !== 'all') {
+      filters.types = data.eventType === 'recognized' ? [29] : [33];
+    }
+
+    return filters;
   };
 
   const onSubmit = (data: FilterFormValues) => {
@@ -247,14 +269,16 @@ export default function DeviceEventFilters({
   const onClear = () => {
     const defaultData = {
       deviceId: "",
-      sort: "desc" as const, // Default to descending for live events
-      date: getDefaultDate(),
-      startTime: "00:00",
-      endTime: "23:59",
+      sort: "desc" as const,
+      date: undefined,
+      startTime: "",
+      endTime: "",
+      category: "all" as const,
+      eventType: "all" as const,
     };
     
     form.reset(defaultData);
-    const filters = buildFilters(defaultData as FilterFormValues);
+    const filters = buildFilters(defaultData);
     onFilterChange(filters);
     setIsOpen(false);
   };
@@ -311,6 +335,53 @@ export default function DeviceEventFilters({
 
             <FormField
               control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="ads">Ads</SelectItem>
+                      <SelectItem value="channels">Channels</SelectItem>
+                      <SelectItem value="content">Content</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="eventType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Event Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select event type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="recognized">Recognized</SelectItem>
+                      <SelectItem value="unrecognized">Unrecognized</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="date"
               render={({ field }) => (
                 <FormItem>
@@ -328,7 +399,7 @@ export default function DeviceEventFilters({
                           {field.value ? (
                             format(field.value, "PPP")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>All dates</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>

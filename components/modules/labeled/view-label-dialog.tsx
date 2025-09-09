@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -6,12 +5,12 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label, LabelSong, LabelAd, LabelError, LabelProgram, LabelMovie } from "@/services/labels.service";
+import { Label, LabelSong, LabelAd, LabelError, LabelProgram } from "@/services/labels.service";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-// Define type for details based on Label type - now includes LabelMovie
-type LabelDetails = LabelSong | LabelAd | LabelError | LabelProgram | LabelMovie | null;
+// Define type for details based on Label type
+type LabelDetails = LabelSong | LabelAd | LabelError | LabelProgram | null;
 
 type LabelWithDetails = Label & {
   details: LabelDetails;
@@ -39,71 +38,10 @@ export function ViewLabelDialog({ label }: ViewLabelDialogProps) {
     const timestampInSeconds = typeof unixTimestamp === "string" ? parseInt(unixTimestamp, 10) : unixTimestamp;
     const date = new Date(timestampInSeconds * 1000);
     return date.toLocaleString("en-IN", {
-      timeZone: "Asia/Kathmandu",
       dateStyle: "medium",
       timeStyle: "short",
     });
   }
-
-  // Helper function to get formatted details based on label type
-  const getFormattedDetails = () => {
-    if (!label.details) return null;
-
-    const details: { [key: string]: any } = {};
-    
-    switch (label.label_type) {
-      case "song":
-        const songDetails = label.details as LabelSong;
-        details["Song Name"] = songDetails.song_name;
-        if (songDetails.artist) details["Artist"] = songDetails.artist;
-        if (songDetails.album) details["Album"] = songDetails.album;
-        if (songDetails.language) details["Language"] = songDetails.language;
-        if (songDetails.release_year) details["Release Year"] = songDetails.release_year;
-        break;
-      
-      case "ad":
-        const adDetails = label.details as LabelAd;
-        details["Type"] = adDetails.type.replace("_", " ");
-        details["Brand"] = adDetails.brand;
-        if (adDetails.product) details["Product"] = adDetails.product;
-        if (adDetails.category) details["Category"] = adDetails.category;
-        if (adDetails.sector) details["Sector"] = adDetails.sector;
-        if (adDetails.format) details["Format"] = adDetails.format;
-        break;
-      
-      case "error":
-        const errorDetails = label.details as LabelError;
-        details["Error Type"] = errorDetails.error_type;
-        break;
-      
-      case "program":
-        const programDetails = label.details as LabelProgram;
-        details["Program Name"] = programDetails.program_name;
-        if (programDetails.genre) details["Genre"] = programDetails.genre;
-        if (programDetails.episode_number) details["Episode Number"] = programDetails.episode_number;
-        if (programDetails.season_number) details["Season Number"] = programDetails.season_number;
-        if (programDetails.language) details["Language"] = programDetails.language;
-        break;
-      
-      case "movie":
-        const movieDetails = label.details as LabelMovie;
-        details["Movie Name"] = movieDetails.movie_name;
-        if (movieDetails.genre) details["Genre"] = movieDetails.genre;
-        if (movieDetails.director) details["Director"] = movieDetails.director;
-        if (movieDetails.release_year) details["Release Year"] = movieDetails.release_year;
-        if (movieDetails.language) details["Language"] = movieDetails.language;
-        if (movieDetails.duration) details["Duration"] = `${movieDetails.duration} minutes`;
-        if (movieDetails.rating) details["Rating"] = movieDetails.rating;
-        break;
-      
-      default:
-        return null;
-    }
-
-    return details;
-  };
-
-  const formattedDetails = getFormattedDetails();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -125,26 +63,25 @@ export function ViewLabelDialog({ label }: ViewLabelDialogProps) {
                 alt={`Label image ${currentImageIndex + 1}`}
                 className="w-full h-64 object-contain rounded-md"
               />
-              {label.image_paths.length > 1 && (
-                <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                  {currentImageIndex + 1} / {label.image_paths.length}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Label Type Specific Details */}
-          {formattedDetails && (
+          {/* Program Details (if any) */}
+          {label.details && (
             <div className="border rounded-lg p-4 bg-muted/50">
               <h3 className="text-lg font-medium capitalize">{label.label_type} Details</h3>
-              <Separator className="my-2"/>
-              <div className="grid grid-cols-1 gap-2 text-sm">
-                {Object.entries(formattedDetails).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <span className="font-medium">{key}:</span>
-                    <span className="text-right">{value}</span>
-                  </div>
-                ))}
+              <Separator/>
+              <div className="grid grid-cols-1 gap-2 text-sm mt-2">
+                {Object.entries(label.details).map(
+                  ([key, value]) =>
+                    key !== "label_id" &&
+                    value && (
+                      <div key={key} className="flex justify-between">
+                        <span className="font-medium capitalize">{key.replace("_", " ")}:</span>
+                        <span>{value}</span>
+                      </div>
+                    )
+                )}
               </div>
             </div>
           )}
