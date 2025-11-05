@@ -73,7 +73,7 @@ export const EventSchema = z.object({
       score: z.number().nullable(),
     }),
   ),
-  face: z.array(
+  faces: z.array(
     z.object({
       id: z.number(),
       name: z.string(),
