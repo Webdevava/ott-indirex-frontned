@@ -99,7 +99,7 @@ const columns: ColumnDef<Event>[] = [
                 : "text-foreground"
             )}
           >
-            {score !== null ? score.toFixed(2) : "N/A"}
+            {score !== null ? score?.toFixed(2) : "N/A"}
           </span>
         </div>
       );
@@ -148,7 +148,7 @@ const columns: ColumnDef<Event>[] = [
                   <span className="font-medium">{channel.name}</span>
                   {channel.score !== null && (
                     <span className="text-muted-foreground ml-2">
-                      ({channel.score.toFixed(2)})
+                      ({channel.score?.toFixed(2)})
                     </span>
                   )}
                 </div>
@@ -204,7 +204,7 @@ const columns: ColumnDef<Event>[] = [
                   <span className="font-medium">{ad.name}</span>
                   {ad.score !== null && (
                     <span className="text-muted-foreground ml-2">
-                      ({ad.score.toFixed(2)})
+                      ({ad.score?.toFixed(2)})
                     </span>
                   )}
                 </div>
@@ -260,7 +260,7 @@ const columns: ColumnDef<Event>[] = [
                   <span className="font-medium">{item.name}</span>
                   {item.score !== null && (
                     <span className="text-muted-foreground ml-2">
-                      ({item.score.toFixed(2)})
+                      ({item.score?.toFixed(2)})
                     </span>
                   )}
                 </div>
@@ -279,67 +279,38 @@ const columns: ColumnDef<Event>[] = [
     header: "OCR",
     accessorKey: "ocr",
     cell: ({ row }) => {
-      const ocr = row.getValue("ocr") as Event["ocr"];
+      const ocr = row.getValue("ocr") as { id: number; text: string }[] | null;
+
       return (
         <div className="space-y-1">
-          {ocr?.length > 0 ? (
-            ocr.map(
-              (item: {
-                id: Key | null | undefined;
-                name:
-                | string
-                | number
-                | bigint
-                | boolean
-                | ReactElement<unknown, string | JSXElementConstructor<any>>
-                | Iterable<ReactNode>
-                | ReactPortal
-                | Promise<
-                  | string
-                  | number
-                  | bigint
-                  | boolean
-                  | ReactPortal
-                  | ReactElement<
-                    unknown,
-                    string | JSXElementConstructor<any>
-                  >
-                  | Iterable<ReactNode>
-                  | null
-                  | undefined
-                >
-                | null
-                | undefined;
-                score: number | null;
-              }) => (
-                <div key={item.id} className="text-sm">
-                  <span className="font-medium">{item.name}</span>
-                  {item.score !== null && (
-                    <span className="text-muted-foreground ml-2">
-                      ({item.score.toFixed(2)})
-                    </span>
-                  )}
-                </div>
-              )
-            )
+          {ocr && ocr.length > 0 ? (
+            ocr.map((item) => (
+              <div key={item.id} className="text-sm text-foreground">
+                {item.text ? (
+                  <span className="break-words line-clamp-3">{item.text}</span>
+                ) : (
+                  <span className="text-muted-foreground">No text</span>
+                )}
+              </div>
+            ))
           ) : (
             <span className="text-muted-foreground text-sm">-</span>
           )}
         </div>
       );
     },
-    size: 140,
+    size: 300,
     enableSorting: false,
   },
   {
-    header: "Face",
-    accessorKey: "face",
+    header: "faces",
+    accessorKey: "faces",
     cell: ({ row }) => {
-      const face = row.getValue("face") as Event["face"];
+      const faces = row.getValue("faces") as Event["faces"];
       return (
         <div className="space-y-1">
-          {face?.length > 0 ? (
-            face.map(
+          {faces?.length > 0 ? (
+            faces.map(
               (item: {
                 id: Key | null | undefined;
                 name:
@@ -372,7 +343,7 @@ const columns: ColumnDef<Event>[] = [
                   <span className="font-medium">{item.name}</span>
                   {item.score !== null && (
                     <span className="text-muted-foreground ml-2">
-                      ({item.score.toFixed(2)})
+                      ({item.score?.toFixed(2)})
                     </span>
                   )}
                 </div>
