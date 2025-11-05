@@ -114,7 +114,7 @@ const columns: ColumnDef<Event>[] = [
       const channels = row.getValue("channels") as Event["channels"];
       return (
         <div className="space-y-1">
-          {channels.length > 0 ? (
+          {channels?.length > 0 ? (
             channels.map(
               (channel: {
                 id: Key | null | undefined;
@@ -170,7 +170,7 @@ const columns: ColumnDef<Event>[] = [
       const ads = row.getValue("ads") as Event["ads"];
       return (
         <div className="space-y-1">
-          {ads.length > 0 ? (
+          {ads?.length > 0 ? (
             ads.map(
               (ad: {
                 id: Key | null | undefined;
@@ -220,13 +220,13 @@ const columns: ColumnDef<Event>[] = [
     enableSorting: false,
   },
   {
-    header: "Content",
+    header: "Object",
     accessorKey: "content",
     cell: ({ row }) => {
       const content = row.getValue("content") as Event["content"];
       return (
         <div className="space-y-1">
-          {content.length > 0 ? (
+          {content?.length > 0 ? (
             content.map(
               (item: {
                 id: Key | null | undefined;
@@ -275,6 +275,118 @@ const columns: ColumnDef<Event>[] = [
     size: 140,
     enableSorting: false,
   },
+  {
+    header: "OCR",
+    accessorKey: "ocr",
+    cell: ({ row }) => {
+      const ocr = row.getValue("ocr") as Event["ocr"];
+      return (
+        <div className="space-y-1">
+          {ocr?.length > 0 ? (
+            ocr.map(
+              (item: {
+                id: Key | null | undefined;
+                name:
+                | string
+                | number
+                | bigint
+                | boolean
+                | ReactElement<unknown, string | JSXElementConstructor<any>>
+                | Iterable<ReactNode>
+                | ReactPortal
+                | Promise<
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactPortal
+                  | ReactElement<
+                    unknown,
+                    string | JSXElementConstructor<any>
+                  >
+                  | Iterable<ReactNode>
+                  | null
+                  | undefined
+                >
+                | null
+                | undefined;
+                score: number | null;
+              }) => (
+                <div key={item.id} className="text-sm">
+                  <span className="font-medium">{item.name}</span>
+                  {item.score !== null && (
+                    <span className="text-muted-foreground ml-2">
+                      ({item.score.toFixed(2)})
+                    </span>
+                  )}
+                </div>
+              )
+            )
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
+          )}
+        </div>
+      );
+    },
+    size: 140,
+    enableSorting: false,
+  },
+  {
+    header: "Face",
+    accessorKey: "face",
+    cell: ({ row }) => {
+      const face = row.getValue("face") as Event["face"];
+      return (
+        <div className="space-y-1">
+          {face?.length > 0 ? (
+            face.map(
+              (item: {
+                id: Key | null | undefined;
+                name:
+                | string
+                | number
+                | bigint
+                | boolean
+                | ReactElement<unknown, string | JSXElementConstructor<any>>
+                | Iterable<ReactNode>
+                | ReactPortal
+                | Promise<
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactPortal
+                  | ReactElement<
+                    unknown,
+                    string | JSXElementConstructor<any>
+                  >
+                  | Iterable<ReactNode>
+                  | null
+                  | undefined
+                >
+                | null
+                | undefined;
+                score: number | null;
+              }) => (
+                <div key={item.id} className="text-sm">
+                  <span className="font-medium">{item.name}</span>
+                  {item.score !== null && (
+                    <span className="text-muted-foreground ml-2">
+                      ({item.score.toFixed(2)})
+                    </span>
+                  )}
+                </div>
+              )
+            )
+          ) : (
+            <span className="text-muted-foreground text-sm">-</span>
+          )}
+        </div>
+      );
+    },
+    size: 140,
+    enableSorting: false,
+  },
   // {
   //   header: "Labels",
   //   accessorKey: "labels",
@@ -282,7 +394,7 @@ const columns: ColumnDef<Event>[] = [
   //     const labels = row.getValue("labels") as Event["labels"];
   //     return (
   //       <div className="space-y-1">
-  //         {labels.length > 0 ? (
+  //         {labels?.length > 0 ? (
   //           labels.map((label: { id: Key | null | undefined; label_type: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
   //             <Badge key={label.id} variant="secondary" className="text-xs">
   //               {label.label_type}
@@ -380,7 +492,7 @@ function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+  if (parts?.length === 2) return parts.pop()?.split(";").shift() || null;
   return null;
 }
 
@@ -791,7 +903,7 @@ function DeviceEventTableContent() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columns?.length}
                   className="h-24 text-center"
                 >
                   {loading ? "Loading..." : "No results."}

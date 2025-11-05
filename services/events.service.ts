@@ -73,6 +73,20 @@ export const EventSchema = z.object({
       score: z.number().nullable(),
     }),
   ),
+  face: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      score: z.number().nullable(),
+    }),
+  ),
+  ocr: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      score: z.number().nullable(),
+    }),
+  ),
   labels: z.array(LabelSchema),
 });
 
