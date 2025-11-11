@@ -604,7 +604,7 @@ function DeviceEventTableContent() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Total Events: {total} (Showing {data.length} after 5s gap filter)
+              Total Events: {total} (Showing {data.length})
             </span>
             {(loading || isRefreshing) && (
               <Badge variant="secondary" className="flex items-center gap-1">
