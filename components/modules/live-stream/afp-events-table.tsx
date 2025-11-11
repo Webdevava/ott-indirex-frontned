@@ -7,8 +7,6 @@ import {
   useEffect,
   useState,
   Suspense,
-  Key,
-  ReactNode,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -64,13 +62,23 @@ import {
 import DeviceEventFilters from "./device-event-filters";
 import { TooltipList } from "@/components/ui/tooltip-list";
 
+// Helper to generate random hash
+const generateFingerprint = () => {
+  const chars = "0123456789abcdef";
+  let hash = "";
+  for (let i = 0; i < 12; i++) {
+    hash += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return hash.slice(0, 3) + "..." + hash.slice(-3);
+};
+
 const columns: ColumnDef<Event>[] = [
   {
     header: "Device ID",
     accessorKey: "device_id",
     size: 100,
     enableSorting: false,
-    enableHiding: false, // Always show
+    enableHiding: false,
   },
   {
     header: "Type",
@@ -308,7 +316,7 @@ const columns: ColumnDef<Event>[] = [
     },
     size: 160,
     enableSorting: false,
-    enableHiding: false, // Always show
+    enableHiding: false,
   },
   {
     header: "Image",
@@ -359,6 +367,21 @@ const columns: ColumnDef<Event>[] = [
     size: 80,
     enableSorting: false,
   },
+  // New Fingerprint Column
+  {
+    id: "fingerprint",
+    header: "Fingerprint",
+    size: 100,
+    enableSorting: false,
+    cell: () => {
+      const hash = generateFingerprint();
+      return (
+        <span className="text-xs font-mono text-muted-foreground">
+          {hash}
+        </span>
+      );
+    },
+  },
 ];
 
 /* ────────────────────────────────────── Helpers ────────────────────────────────────── */
@@ -386,6 +409,7 @@ function DeviceEventTableContent() {
     pageIndex: 0,
     pageSize,
   });
+  const [rawData, setRawData] = useState<Event[]>([]);
   const [data, setData] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
@@ -394,8 +418,14 @@ function DeviceEventTableContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   
-  // Column visibility state
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    image_path: false,
+    ocr: false,
+    faces: false,
+    ads: false,
+    content: false,
+    fingerprint: false, // Hidden by default
+  });
 
   const userRole = getCookie("auth_user_role");
 
@@ -482,22 +512,49 @@ function DeviceEventTableContent() {
       });
 
       if (res.success && res.data) {
-        setData(res.data.events || []);
+        setRawData(res.data.events || []);
         setTotalPages(res.data.totalPages || 0);
         setTotal(res.data.total || 0);
         setLastRefresh(new Date());
       } else {
         toast.error(res.message || "Failed");
-        setData([]); setTotalPages(0); setTotal(0);
+        setRawData([]); setTotalPages(0); setTotal(0);
       }
     } catch (e: any) {
       toast.error(e.message || "Failed");
-      setData([]); setTotalPages(0); setTotal(0);
+      setRawData([]); setTotalPages(0); setTotal(0);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
     }
   };
+
+  /* ───── Apply 5-second gap filtering ───── */
+  useEffect(() => {
+    if (!rawData.length) {
+      setData([]);
+      return;
+    }
+
+    const filtered: Event[] = [];
+    let lastShownTimestamp: number | null = null;
+
+    const sorted = [...rawData].sort((a, b) => {
+      const tsA = parseInt(a.timestamp);
+      const tsB = parseInt(b.timestamp);
+      return tsB - tsA;
+    });
+
+    for (const event of sorted) {
+      const currentTs = parseInt(event.timestamp);
+      if (lastShownTimestamp === null || (lastShownTimestamp - currentTs) >= 5) {
+        filtered.push(event);
+        lastShownTimestamp = currentTs;
+      }
+    }
+
+    setData(filtered);
+  }, [rawData]);
 
   /* ───── auto-refresh ───── */
   useEffect(() => {
@@ -537,7 +594,6 @@ function DeviceEventTableContent() {
     paginationItemsToDisplay: 10,
   });
 
-  // Get visible column count
   const visibleColumnCount = table.getAllColumns().filter(col => col.getIsVisible()).length;
   const totalColumnCount = table.getAllColumns().length;
 
@@ -548,7 +604,7 @@ function DeviceEventTableContent() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Total Events: {total}
+              Total Events: {total} (Showing {data.length} after 5s gap filter)
             </span>
             {(loading || isRefreshing) && (
               <Badge variant="secondary" className="flex items-center gap-1">
@@ -563,7 +619,6 @@ function DeviceEventTableContent() {
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Column Visibility Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -610,7 +665,7 @@ function DeviceEventTableContent() {
                       onCheckedChange={(value) => column.toggleVisibility(!!value)}
                     >
                       <div className="flex items-center justify-between w-full">
-                        <span>{column.id.replace(/_/g, " ")}</span>
+                        <span>{column.id === "fingerprint" ? "Fingerprint" : column.id.replace(/_/g, " ")}</span>
                         {isVisible ? (
                           <Eye className="h-3.5 w-3.5 ml-2 text-muted-foreground" />
                         ) : (

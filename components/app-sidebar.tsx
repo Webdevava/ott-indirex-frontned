@@ -34,6 +34,12 @@ const navMain = [
     icon: List,
     adminOnly: true,
   },
+    {
+    title: "AFP Stream",
+    url: "/afp-stream",
+    icon: List,
+    adminOnly: true,
+  },
   {
     title: "Annotations",
     url: "#",
